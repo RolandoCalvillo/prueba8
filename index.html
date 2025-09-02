@@ -1598,12 +1598,27 @@ adminDownloadReportBtn.addEventListener('click', () => {
         showModal('Éxito', 'Categorías de tendencias actualizadas correctamente.');
     });
 
-    // Guardar configuración general del login
+// Guardar configuración general del login (CORREGIDO)
     document.getElementById('save-general-settings-btn').addEventListener('click', () => {
-        database.loginTexts.title = document.getElementById('admin-login-title').value;
-        database.loginTexts.subtitle = document.getElementById('admin-login-subtitle').value;
-        database.loginTexts.description = document.getElementById('admin-login-description').value;
+        // 1. Leer los nuevos valores desde los campos del formulario.
+        const newTitle = document.getElementById('admin-login-title').value;
+        const newSubtitle = document.getElementById('admin-login-subtitle').value;
+        const newDescription = document.getElementById('admin-login-description').value;
+
+        // 2. Actualizar el objeto 'database' en la memoria. (Esta era la parte que faltaba)
+        database.loginTexts.title = newTitle;
+        database.loginTexts.subtitle = newSubtitle;
+        database.loginTexts.description = newDescription;
+
+        // 3. Actualizar la vista de la pantalla de login en vivo.
+        document.getElementById('login-title').textContent = newTitle;
+        document.getElementById('login-subtitle').textContent = newSubtitle;
+        document.getElementById('login-description').textContent = newDescription;
+
+        // 4. Guardar la base de datos actualizada en localStorage.
         saveDatabase();
+
+        // 5. Mostrar confirmación al usuario.
         showModal('Configuración Guardada', 'Los textos de la pantalla de login han sido actualizados.');
     });
 
