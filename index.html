@@ -1,0 +1,1619 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación de Desempeño</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #2a6aff, #ff8500);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: #1a202c;
+            overflow: auto;
+        }
+
+        .container-wrapper {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            transition: all 0.5s ease-in-out;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .hidden-screen {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .card {
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            width: 100%;
+            max-width: 900px;
+            text-align: center;
+        }
+
+        .dashboard-container {
+            width: 100%;
+            max-width: 1200px;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transition: all 0.5s ease-in-out;
+            opacity: 1;
+            transform: scale(1);
+            height: 95vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* Custom scrollbar */
+        .dashboard-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .dashboard-container::-webkit-scrollbar-thumb {
+            background-color: #a0aec0;
+            border-radius: 4px;
+        }
+        .dashboard-container::-webkit-scrollbar-track {
+            background-color: #f7fafc;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.75rem;
+            transition: border-color 0.3s ease;
+            text-align: center;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: #2a6aff;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            border-radius: 9999px;
+            background-color: #e2e8f0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .category-card {
+            transition: all 0.3s ease-in-out;
+        }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 20px -5px rgba(0, 0, 0, 0.1), 0 6px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .criteria-content {
+            transition: max-height 0.5s ease-in-out, margin-top 0.5s ease-in-out;
+            overflow: hidden;
+            max-height: 0;
+        }
+
+        .criteria-content.open {
+            margin-top: 1rem;
+        }
+        
+        .arrow-icon {
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .arrow-icon.open {
+            transform: rotate(180deg);
+        }
+
+        /* Styles for the trends chart container */
+        .chart-container {
+            position: relative;
+            height: 400px; /* Fixed height to prevent infinite stretch */
+            width: 100%;
+        }
+
+        /* Responsive table */
+        .table-container {
+            overflow-x: auto;
+        }
+        .admin-table {
+            width: 100%;
+            min-width: 800px; /* Minimum width for the table */
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+        .admin-table th, .admin-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+        }
+        .admin-table th {
+            background-color: #f7fafc;
+            font-weight: 600;
+            color: #4a5568;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .admin-table td {
+            vertical-align: top;
+        }
+    </style>
+</head>
+<body>
+
+<div id="login-screen" class="container-wrapper">
+    <div class="card max-w-md">
+        <img src="https://i.postimg.cc/KzxV7m0Z/CNCI-VIRTUAL-LOGO.jpg" alt="Logo de la Universidad Virtual CNCI" class="mx-auto w-48 mb-6">
+        <h1 id="login-title" class="text-2xl font-bold mb-2">Evaluación Modular – Departamento de Servicios Estudiantiles</h1>
+        <h2 id="login-subtitle" class="text-xl font-semibold mb-6">Módulo M9, Agosto 2025 🗓️</h2>
+        <p id="login-description" class="text-gray-600 mb-6">Consulta tu desempeño del módulo de manera detallada ingresando tu usuario.</p>
+        <div class="flex flex-col items-center gap-4">
+            <input id="user-input" type="text" placeholder="Ingresa tu usuario" class="login-input" autocomplete="off">
+            <button id="login-button" class="w-full bg-[#2a6aff] text-white font-semibold py-3 px-6 rounded-xl transition duration-300 ease-in-out transform hover:scale-105 hover:bg-[#1a55ff] shadow-lg">
+                Consultar mi Evaluación ✨
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="dashboard-screen" class="container-wrapper hidden-screen">
+    <div class="dashboard-container">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+            <div class="flex-grow">
+                <h1 id="dashboard-title" class="text-3xl font-bold mb-1">Resultados de Evaluación 📊</h1>
+                <p id="user-name" class="text-gray-500 text-lg"></p>
+            </div>
+            <button id="logout-button" class="mt-4 md:mt-0 bg-gray-200 text-gray-700 font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-gray-300 transform hover:scale-105">
+                Volver ↩️
+            </button>
+        </div>
+
+        <div class="flex justify-between items-center bg-gray-100 p-2 rounded-xl mb-6 flex-wrap">
+            <button class="tab-button w-1/4 py-3 px-2 rounded-xl text-sm md:text-base transition-colors duration-200" data-tab="resumen">Resumen General 📄</button>
+            <button class="tab-button w-1/4 py-3 px-2 rounded-xl text-sm md:text-base transition-colors duration-200" data-tab="tendencias">Tendencias 📈</button>
+            <button class="tab-button w-1/4 py-3 px-2 rounded-xl text-sm md:text-base transition-colors duration-200" data-tab="insignias">Insignias 🎖️</button>
+            <button class="tab-button w-1/4 py-3 px-2 rounded-xl text-sm md:text-base transition-colors duration-200" data-tab="plan">Plan de Trabajo 💡</button>
+        </div>
+
+        <div id="tab-content">
+            <div id="resumen-content" class="tab-page">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-gray-100 p-6 rounded-2xl shadow-sm">
+                        <h3 class="text-xl font-semibold mb-4">Calificación General ⭐</h3>
+                        <div class="flex items-center gap-4">
+                            <span id="general-score" class="text-2xl font-bold text-[#2a6aff]">9.2</span>
+                            <div class="progress-bar flex-grow">
+                                <div id="general-progress" class="progress-fill bg-[#2a6aff]" style="width: 92%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-100 p-6 rounded-2xl shadow-sm">
+                        <h3 class="text-xl font-semibold mb-4">Meta de Llamadas 📞</h3>
+                        <div class="flex items-center gap-4">
+                            <span id="calls-score" class="text-2xl font-bold text-[#ff8500]">8.5</span>
+                            <div class="progress-bar flex-grow">
+                                <div id="calls-progress" class="progress-fill bg-[#ff8500]" style="width: 85%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="categorias-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    </div>
+
+                <div class="bg-gray-100 p-6 rounded-2xl shadow-sm mb-6">
+                    <h3 class="text-xl font-semibold mb-4 text-left">Comentarios generales del Supervisor 📝</h3>
+                    <p class="text-gray-700 text-left" id="general-comments"></p>
+                </div>
+                <div class="flex justify-center">
+                    <a id="eval-details-link" href="#" target="_blank" class="bg-[#ff8500] text-white font-semibold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105 hover:bg-[#ff7a00] shadow-lg">
+                        Detalles de Evaluación 🔍
+                    </a>
+                </div>
+            </div>
+
+            <div id="tendencias-content" class="tab-page hidden">
+                <div class="bg-gray-100 p-6 rounded-2xl shadow-sm mb-6">
+                    <h2 class="text-2xl font-bold mb-4">Gráfica Anual de Desempeño 🗓️</h2>
+                    <div class="chart-container">
+                        <canvas id="performance-chart"></canvas>
+                    </div>
+                    <div class="flex flex-wrap gap-4 justify-center mt-4" id="chart-buttons-container">
+                        </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-gray-100 p-6 rounded-2xl shadow-sm">
+                        <h3 class="text-xl font-semibold mb-2">Hace 2 Meses </h3>
+                        <p class="text-3xl font-bold text-center" id="score-2-months-ago"></p>
+                    </div>
+                    <div class="bg-gray-100 p-6 rounded-2xl shadow-sm">
+                        <h3 class="text-xl font-semibold mb-2">Mes Anterior</h3>
+                        <p class="text-3xl font-bold text-center" id="score-last-month"></p>
+                    </div>
+                    <div class="bg-gray-100 p-6 rounded-2xl shadow-sm">
+                        <h3 class="text-xl font-semibold mb-2">Mes Actual </h3>
+                        <p class="text-3xl font-bold text-center" id="score-this-month"></p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-green-100 p-6 rounded-2xl shadow-sm border border-green-300">
+                        <h3 class="text-xl font-semibold mb-2 flex items-center gap-2">La Mayor Mejora ✅</h3>
+                        <p class="text-gray-700" id="major-improvement-text"></p>
+                    </div>
+                    <div class="bg-red-100 p-6 rounded-2xl shadow-sm border border-red-300">
+                        <h3 class="text-xl font-semibold mb-2 flex items-center gap-2">Área Crítica ⚠️</h3>
+                        <p class="text-gray-700" id="critical-area-text"></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="insignias-content" class="tab-page hidden">
+                <div class="bg-gray-100 p-6 rounded-2xl shadow-sm mb-6">
+                    <h2 class="text-2xl font-bold mb-4">Tus Insignias 🏆</h2>
+                    <ul id="badges-list" class="space-y-4 text-left">
+                        </ul>
+                </div>
+                <div class="bg-gray-100 p-6 rounded-2xl shadow-sm">
+                    <h2 class="text-2xl font-bold mb-4">Próximas Insignias 🚀</h2>
+                    <ul id="next-badges-list" class="space-y-4 text-left">
+                        </ul>
+                </div>
+            </div>
+
+            <div id="plan-content" class="tab-page hidden">
+                <div class="bg-gray-100 p-6 rounded-2xl shadow-sm mb-6">
+                    <h2 class="text-2xl font-bold mb-4">Plan de Mejora 🎯</h2>
+                    <p class="text-gray-700 text-left" id="plan-instructions"></p>
+                </div>
+                <a id="plan-link" href="#" target="_blank" class="w-full md:w-auto bg-[#2a6aff] text-white font-semibold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105 hover:bg-[#1a55ff] shadow-lg inline-block">
+                    Crear mi Plan de Trabajo 📝
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="admin-screen" class="container-wrapper hidden-screen">
+    <div class="dashboard-container">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold flex items-center gap-2">
+                Panel de Administrador ⚙️
+            </h1>
+            <div class="flex items-center gap-2">
+                <button id="add-user-btn" class="bg-green-500 text-white font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-green-600">
+                    Añadir Usuario
+                </button>
+                <button id="admin-logout-button" class="bg-gray-200 text-gray-700 font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-gray-300 transform hover:scale-105">
+                    Volver al login ↩️
+                </button>
+                <button id="empty-table-btn" class="bg-red-500 text-white font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-red-600">
+                    Vaciar tabla 🗑️
+                </button>
+            </div>
+        </div>
+        
+        <div class="bg-gray-100 p-6 rounded-2xl shadow-sm mb-6">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2">Edición General 📄</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-1">Título de Login</label>
+                    <input type="text" id="admin-login-title" class="w-full p-2 rounded-lg border border-gray-300" placeholder="Título de la pantalla de login">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-1">Subtítulo de Login</label>
+                    <input type="text" id="admin-login-subtitle" class="w-full p-2 rounded-lg border border-gray-300" placeholder="Subtítulo de la pantalla de login">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-gray-700 font-semibold mb-1">Descripción de Login</label>
+                    <textarea id="admin-login-description" class="w-full p-2 rounded-lg border border-gray-300" rows="3" placeholder="Descripción de la pantalla de login"></textarea>
+                </div>
+            </div>
+            <button id="save-general-settings-btn" class="mt-4 bg-[#2a6aff] text-white font-semibold py-2 px-4 rounded-lg transition duration-300 hover:bg-[#1a55ff]">
+                Guardar Cambios
+            </button>
+        </div>
+
+        <div class="bg-gray-100 p-6 rounded-2xl shadow-sm mb-6">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2">Tabla de Edición de Usuarios 👥</h2>
+            <div class="table-container">
+                <table id="users-table" class="admin-table">
+                    <thead>
+                        <tr>
+                            <th class="w-1/12">Usuario</th>
+                            <th class="w-2/12">Nombre</th>
+                            <th class="w-1/12">Puntaje General</th>
+                            <th class="w-1/12">Meta de Llamadas</th>
+                            <th class="w-4/12">Comentarios</th>
+                            <th class="w-2/12">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-gray-100 p-6 rounded-2xl shadow-sm mb-6">
+            <h2 class="text-xl font-bold mb-4">Edición de Categorías y Criterios de Evaluación 📝</h2>
+            <p class="text-gray-700 mb-4">Los cambios realizados aquí se aplicarán a la plantilla de todos los usuarios.</p>
+            <button id="edit-categories-btn" class="bg-[#ff8500] text-white font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-[#ff7a00]">
+                Editar Categorías y Criterios
+            </button>
+        </div>
+        
+        <div class="bg-gray-100 p-6 rounded-2xl shadow-sm mb-6">
+            <h2 class="text-xl font-bold mb-4">Edición de Tendencias 📈</h2>
+            <p class="text-gray-700 mb-4">Añade, edita o elimina las categorías del gráfico de líneas.</p>
+            <button id="edit-trends-btn" class="bg-[#4ade80] text-white font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-[#34d399]">
+                Editar Categorías de Tendencias
+            </button>
+        </div>
+        
+        <div class="flex justify-center mt-8 mb-4">
+             <button id="admin-download-report-btn" class="bg-gray-600 text-white font-semibold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105 hover:bg-gray-700 shadow-lg">
+                Generar y Descargar Reporte 📥
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-container" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white p-8 rounded-xl shadow-lg text-center max-w-sm w-full">
+        <h3 id="modal-title" class="text-xl font-bold mb-4"></h3>
+        <p id="modal-message" class="text-gray-700 mb-6"></p>
+        <button id="modal-ok-button" class="bg-[#2a6aff] text-white font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-[#1a55ff]">
+            Aceptar
+        </button>
+    </div>
+</div>
+
+<div id="user-modal-container" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white p-8 rounded-xl shadow-lg max-w-md w-full">
+        <h3 id="user-modal-title" class="text-2xl font-bold mb-4 text-center">Añadir Nuevo Usuario</h3>
+        <form id="user-form" class="space-y-4">
+            <div>
+                <label for="form-id" class="block text-sm font-medium text-gray-700">Usuario ID</label>
+                <input type="text" id="form-id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" required>
+            </div>
+            <div>
+                <label for="form-name" class="block text-sm font-medium text-gray-700">Nombre</label>
+                <input type="text" id="form-name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" required>
+            </div>
+            <div>
+                <label for="form-role" class="block text-sm font-medium text-gray-700">Rol</label>
+                <select id="form-role" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
+                    <option value="user">Usuario</option>
+                    <option value="admin">Administrador</option>
+                </select>
+            </div>
+            <div>
+                <label for="form-general-score" class="block text-sm font-medium text-gray-700">Puntaje General</label>
+                <input type="number" step="0.1" min="0" max="10" id="form-general-score" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
+            </div>
+            <div>
+                <label for="form-calls-score" class="block text-sm font-medium text-gray-700">Meta de Llamadas</label>
+                <input type="number" step="0.1" min="0" max="10" id="form-calls-score" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
+            </div>
+            <div>
+                <label for="form-comments" class="block text-sm font-medium text-gray-700">Comentarios</label>
+                <textarea id="form-comments" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"></textarea>
+            </div>
+            <div class="flex justify-end gap-4 mt-6">
+                <button type="button" id="user-modal-cancel" class="bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-gray-400">Cancelar</button>
+                <button type="submit" id="user-modal-save" class="bg-[#2a6aff] text-white font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-[#1a55ff]">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="details-modal-container" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white p-8 rounded-xl shadow-lg max-w-2xl w-full h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+            <h3 id="details-modal-title" class="text-2xl font-bold">Detalles de Usuario</h3>
+            <button type="button" id="details-modal-cancel-top" class="bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-gray-400">Cancelar</button>
+        </div>
+        <form id="details-form" class="space-y-6">
+            <div class="bg-gray-100 p-4 rounded-xl">
+                <h4 class="text-lg font-semibold mb-2">Títulos y Enlaces del Dashboard</h4>
+                <div class="space-y-2">
+                    <label class="block">
+                        <span class="text-sm">Título del Dashboard:</span>
+                        <input type="text" id="details-dashboard-title" class="w-full mt-1 p-2 rounded-lg border">
+                    </label>
+                    <label class="block">
+                        <span class="text-sm">Enlace 'Detalles de Evaluación':</span>
+                        <input type="url" id="details-eval-link" class="w-full mt-1 p-2 rounded-lg border">
+                    </label>
+                    <label class="block">
+                        <span class="text-sm">Enlace 'Plan de Trabajo':</span>
+                        <input type="url" id="details-plan-link" class="w-full mt-1 p-2 rounded-lg border">
+                    </label>
+                </div>
+            </div>
+            
+            <div class="bg-gray-100 p-4 rounded-xl">
+                <h4 class="text-lg font-semibold mb-2">Comentarios y Métricas</h4>
+                <label class="block">
+                    <span class="text-sm">Comentarios Generales del Supervisor:</span>
+                    <textarea id="details-general-comments" rows="3" class="w-full mt-1 p-2 rounded-lg border"></textarea>
+                </label>
+                <label class="block">
+                    <span class="text-sm">Mayor Mejora:</span>
+                    <textarea id="details-improvement" rows="2" class="w-full mt-1 p-2 rounded-lg border"></textarea>
+                </label>
+                <label class="block">
+                    <span class="text-sm">Área Crítica:</span>
+                    <textarea id="details-critical-area" rows="2" class="w-full mt-1 p-2 rounded-lg border"></textarea>
+                </label>
+                <label class="block">
+                    <span class="text-sm">Instrucciones del Plan de Trabajo:</span>
+                    <textarea id="details-plan-instructions" rows="2" class="w-full mt-1 p-2 rounded-lg border"></textarea>
+                </label>
+            </div>
+
+            <div class="bg-gray-100 p-4 rounded-xl">
+                <h4 class="text-lg font-semibold mb-2">Datos de Tendencias (Gráfica)</h4>
+                <div id="trends-form-container" class="space-y-4">
+                    </div>
+            </div>
+
+            <div id="criteria-form-container" class="space-y-4">
+                </div>
+
+            <div class="flex justify-between gap-4 mt-6">
+                <button type="button" id="details-modal-cancel" class="bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-gray-400">Cancelar</button>
+                <button type="submit" id="details-modal-save" class="bg-[#2a6aff] text-white font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-[#1a55ff]">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="confirm-modal-container" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white p-8 rounded-xl shadow-lg text-center max-w-sm w-full">
+        <h3 class="text-xl font-bold mb-4 text-red-600">⚠️ Confirmar Eliminación</h3>
+        <p class="text-gray-700 mb-6">¿Estás seguro de que deseas eliminar TODOS los datos de la tabla? Esta acción no se puede deshacer.</p>
+        <div class="flex justify-center gap-4">
+            <button id="confirm-empty-btn" class="bg-red-500 text-white font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-red-600">Sí, estoy seguro</button>
+            <button id="cancel-empty-btn" class="bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-gray-400">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<div id="categories-modal-container" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white p-8 rounded-xl shadow-lg max-w-md w-full h-[90vh] overflow-y-auto">
+        <h3 class="text-2xl font-bold mb-4 text-center">Edición de Categorías</h3>
+        <form id="categories-form" class="space-y-4">
+            <div id="categories-list-container" class="space-y-4">
+                </div>
+            <button type="button" id="add-category-btn" class="w-full bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg transition duration-300 hover:bg-gray-300">
+                Añadir Nueva Categoría
+            </button>
+            <div class="flex justify-end gap-4 mt-6">
+                <button type="button" id="categories-modal-cancel" class="bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-gray-400">Cancelar</button>
+                <button type="submit" id="categories-modal-save" class="bg-[#2a6aff] text-white font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-[#1a55ff]">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="trends-modal-container" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white p-8 rounded-xl shadow-lg max-w-md w-full h-[90vh] overflow-y-auto">
+        <h3 class="text-2xl font-bold mb-4 text-center">Edición de Tendencias</h3>
+        <form id="trends-form" class="space-y-4">
+            <div id="trends-list-container" class="space-y-4">
+                </div>
+            <button type="button" id="add-trend-btn" class="w-full bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg transition duration-300 hover:bg-gray-300">
+                Añadir Nueva Tendencia
+            </button>
+            <div class="flex justify-end gap-4 mt-6">
+                <button type="button" id="trends-modal-cancel" class="bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-gray-400">Cancelar</button>
+                <button type="submit" id="trends-modal-save" class="bg-[#2a6aff] text-white font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-[#1a55ff]">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Se simula una base de datos local
+    let database = {
+        users: {
+            'usuario01': {
+                id: 'usuario01',
+                name: 'Ana Sofía Gutiérrez',
+                role: 'user',
+                generalScore: 9.2,
+                callsScore: 8.5,
+                generalComments: 'Pedro, has demostrado un excelente desempeño este mes. Tu atención a los alumnos es destacable y sigues los procesos de manera consistente. Debes mejorar en los tiempos de respuesta para alcanzar los objetivos del equipo.',
+                dashboardTitle: 'Resultados de Evaluación 📊',
+                evalDetailsLink: 'https://example.com/detalles/usuario01',
+                planLink: 'https://example.com/plan-de-trabajo/usuario01',
+                improvement: 'Incremento del 5% en la tasa de reincorporación, superando la meta del equipo.',
+                criticalArea: 'Mantener la agilidad en respuestas de WhatsApp durante picos de alta demanda.',
+                planInstructions: 'Instrucciones para el Plan de Trabajo. A partir de los resultados de tu evaluación, identifica de 3 a 4 áreas de oportunidad y describe acciones concretas que puedas implementar para mejorarlas. Indica el plazo estimado y cómo darás seguimiento a cada acción. Sé específico y realista para facilitar el cumplimiento y la evaluación de avances. Ingresa al siguiente enlace, redacta y establece tu plan de trabajo antes del 11 de septiembre de 2025.',
+                monthlyScores: {
+                    'Hace 2 Meses': '8.5 📉',
+                    'Mes Anterior': '9.1 📈',
+                    'Mes Actual': '9.2 📈'
+                }
+            },
+            'admin': {
+                id: 'admin',
+                name: 'Administrador',
+                role: 'admin',
+                generalScore: 0,
+                callsScore: 0,
+                generalComments: '',
+                dashboardTitle: 'Panel de Administrador ⚙️'
+            }
+        },
+        evaluationData: [
+            {
+                category: 'RETENCIÓN',
+                emoji: '🤝',
+                colors: ['#2a6aff', '#4f8bff'],
+                comments: {
+                    supervision: 'Se cumplió la meta del mes. Se ha visto un aumento en el porcentaje de retención.',
+                    quality: 'La calidad del seguimiento a la población morosa es alta y se ha reflejado en los resultados.'
+                },
+                criteria: [
+                    { name: 'Seguimiento a población morosa', score: 9.0 },
+                    { name: 'Total de bajas de alumnos con morosidad', score: 8.5 },
+                    { name: 'Uso adecuado y oportuno de la columna de retención de CRM...', score: 10.0 },
+                    { name: 'Retención y bajas pagadas', score: 9.0 }
+                ]
+            },
+            {
+                category: 'REINCORPORACIÓN',
+                emoji: '🔄',
+                colors: ['#ff8500', '#ffb050'],
+                comments: {
+                    supervision: 'Se superó la meta de reingresos. Se recomienda mantener el enfoque en la búsqueda y difusión de promociones.',
+                    quality: 'Los registros y seguimientos se realizan de manera detallada y completa.'
+                },
+                criteria: [
+                    { name: 'Bajas por no pago', score: 10.0 },
+                    { name: 'Búsqueda y difusión de promociones', score: 9.0 },
+                    { name: 'Registro y seguimiento', score: 10.0 },
+                    { name: 'Cierre de prospectos', score: 8.0 },
+                    { name: 'Total de reingresos', score: 9.5 }
+                ]
+            },
+            {
+                category: 'PROCESOS',
+                emoji: '⚙️',
+                colors: ['#4ade80', '#86efac'],
+                comments: {
+                    supervision: 'Excelente manejo de los procesos académicos y atención al detalle en la búsqueda de alumnos.',
+                    quality: 'Se nota la consistencia en los procesos, lo que facilita el trabajo de otros departamentos.'
+                },
+                criteria: [
+                    { name: 'Búsqueda de alumnos por estatus y perfil: semana 1 a la semana 4', score: 10.0 },
+                    { name: 'Procesos académicos: Cambio de carrera y/o programa, Cambio de modelo educativo...', score: 10.0 }
+                ]
+            },
+            {
+                category: 'WHATSAPP',
+                emoji: '📱',
+                colors: ['#8b5cf6', '#a78bfa'],
+                comments: {
+                    supervision: 'Buen desempeño en la respuesta de mensajes, aunque se debe mejorar en la agilidad en horarios pico.',
+                    quality: 'El mensaje es claro y la redacción es impecable, se mantiene la comunicación formal.'
+                },
+                criteria: [
+                    { name: 'Se mantiene en línea durante todo el horario laboral. ', score: 9.0 },
+                    { name: 'Se responde a todos los mensajes entrantes.', score: 8.0 },
+                    { name: 'Se da seguimiento oportuno a los casos que se atienden por WhatsApp.', score: 8.5 },
+                    { name: 'La redacción es impecable y sin errores ortográficos.', score: 10.0 },
+                ]
+            },
+            {
+                category: 'COMUNICACIÓN INTERNA',
+                emoji: '💬',
+                colors: ['#f97316', '#fb923c'],
+                comments: {
+                    supervision: 'Comunicación efectiva con los diferentes departamentos. Se recomienda ser más proactivo en la colaboración.',
+                    quality: 'El trabajo en equipo es destacable, se nota la sinergia en los casos complejos.'
+                },
+                criteria: [
+                    { name: 'Trabajo en equipo', score: 9.0 },
+                    { name: 'Interacción con el equipo', score: 8.0 },
+                    { name: 'Comunicación asertiva con el supervisor', score: 10.0 },
+                    { name: 'Colaboración en general', score: 9.5 }
+                ]
+            }
+        ],
+        trendsData: {
+            'RETENCIÓN': [8.5, 8.6, 8.8, 8.7, 8.9, 9.0, 9.1, 9.0, 9.2, 9.3, 9.4, 9.5],
+            'REINCORPORACIÓN': [7.0, 7.5, 8.0, 8.5, 8.8, 9.0, 9.2, 9.1, 9.3, 9.4, 9.6, 9.8],
+            'PROCESOS': [9.0, 9.1, 9.2, 9.3, 9.5, 9.6, 9.5, 9.7, 9.8, 9.9, 10.0, 10.0],
+            'WHATSAPP': [7.5, 8.0, 8.2, 8.5, 8.7, 8.8, 8.9, 9.0, 9.2, 9.1, 9.3, 9.5],
+            'COMUNICACIÓN INTERNA': [8.0, 8.2, 8.5, 8.7, 8.8, 9.0, 9.1, 9.2, 9.3, 9.4, 9.5, 9.6]
+        },
+        trendsColors: {
+            'RETENCIÓN': '#2a6aff',
+            'REINCORPORACIÓN': '#ff8500',
+            'PROCESOS': '#4ade80',
+            'WHATSAPP': '#8b5cf6',
+            'COMUNICACIÓN INTERNA': '#f97316'
+        },
+        loginTexts: {
+            title: 'Evaluación Modular – Departamento de Servicios Estudiantiles',
+            subtitle: 'Módulo M8, Agosto 2025 🗓️',
+            description: 'Consulta tu desempeño del módulo de manera detallada ingresando tu usuario Vici.'
+        },
+        badges: [
+            { icon: '🏆', title: 'Maestro(a) de Procesos', description: 'Representa la excelencia en el seguimiento de todos los procesos administrativos y académicos.' },
+            { icon: '🏅', title: 'Campeón(a) de Retención', description: 'Reconoce un alto porcentaje de alumnos retenidos, evitando bajas por morosidad.' },
+            { icon: '🎖️', title: 'Experto(a) en WhatsApp', description: 'Premia la habilidad para gestionar eficientemente las conversaciones y consultas a través de WhatsApp.' },
+            { icon: '🌟', title: 'Estrella del Módulo', description: 'Otorga el reconocimiento por un desempeño integral y sobresaliente durante el módulo.' }
+        ],
+        nextBadges: [
+            { icon: '⭐', title: 'Fortaleza', description: 'Mantener consistencia en procesos de reincorporación.', meta: 'Alcanzar el 95% de reincorporación.' },
+            { icon: '⭐', title: 'Fortaleza', description: 'Mejorar el tiempo de respuesta en llamadas.', meta: 'Reducir el tiempo promedio a 1 minuto y 30 segundos.' }
+        ]
+    };
+
+    // Agregar usuarios de ejemplo para la tabla
+    for (let i = 1; i <= 18; i++) {
+        const userId = `usuario${String(i).padStart(2, '0')}`;
+        const name = `Usuario ${String(i).padStart(2, '0')}`;
+        if (!database.users[userId]) {
+            database.users[userId] = {
+                id: userId,
+                name: name,
+                role: 'user',
+                generalScore: (Math.random() * 3 + 7).toFixed(1), // Random score between 7 and 10
+                callsScore: (Math.random() * 3 + 7).toFixed(1), // Random score between 7 and 10
+                generalComments: `Comentarios generales para el ${name}.`,
+                dashboardTitle: 'Resultados de Evaluación 📊',
+                evalDetailsLink: `https://example.com/detalles/${userId}`,
+                planLink: `https://example.com/plan-de-trabajo/${userId}`,
+                improvement: `La mayor mejora para ${name} es...`,
+                criticalArea: `El área crítica para ${name} es...`,
+                planInstructions: `Instrucciones del plan de mejora para ${name}.`,
+                monthlyScores: {
+                    'Hace 2 Meses': `${(Math.random() * 3 + 7).toFixed(1)} ${Math.random() > 0.5 ? '📈' : '📉'}`,
+                    'Mes Anterior': `${(Math.random() * 3 + 7).toFixed(1)} ${Math.random() > 0.5 ? '📈' : '📉'}`,
+                    'Mes Actual': `${(Math.random() * 3 + 7).toFixed(1)} ${Math.random() > 0.5 ? '📈' : '📉'}`
+                }
+            };
+        }
+    }
+
+    // Funciones de persistencia en localStorage
+    function saveDatabase() {
+        localStorage.setItem('evaluationDatabase', JSON.stringify(database));
+    }
+
+    function loadDatabase() {
+        const savedData = localStorage.getItem('evaluationDatabase');
+        if (savedData) {
+            database = JSON.parse(savedData);
+        }
+    }
+
+    // Cargar la base de datos al inicio
+    loadDatabase();
+
+    let currentUser = null;
+    let chartInstance = null;
+    let editingRow = null;
+
+    // Elementos de la UI
+    const loginScreen = document.getElementById('login-screen');
+    const dashboardScreen = document.getElementById('dashboard-screen');
+    const adminScreen = document.getElementById('admin-screen');
+    const userInput = document.getElementById('user-input');
+    const loginButton = document.getElementById('login-button');
+    const logoutButton = document.getElementById('logout-button');
+    const adminLogoutButton = document.getElementById('admin-logout-button');
+    const userNameElement = document.getElementById('user-name');
+    const tabs = document.querySelectorAll('.tab-button');
+    const categoriasContainer = document.getElementById('categorias-container');
+    const usersTableBody = document.querySelector('#users-table tbody');
+
+    // Modals
+    const modalContainer = document.getElementById('modal-container');
+    const modalTitle = document.getElementById('modal-title');
+    const modalMessage = document.getElementById('modal-message');
+    const modalOkButton = document.getElementById('modal-ok-button');
+    const userModalContainer = document.getElementById('user-modal-container');
+    const userModalTitle = document.getElementById('user-modal-title');
+    const userForm = document.getElementById('user-form');
+    const addUserBtn = document.getElementById('add-user-btn');
+    const userModalCancelBtn = document.getElementById('user-modal-cancel');
+    const detailsModalContainer = document.getElementById('details-modal-container');
+    const detailsForm = document.getElementById('details-form');
+    const detailsModalCancelTopBtn = document.getElementById('details-modal-cancel-top');
+    const detailsModalCancelBtn = document.getElementById('details-modal-cancel');
+    const confirmModalContainer = document.getElementById('confirm-modal-container');
+    const emptyTableBtn = document.getElementById('empty-table-btn');
+    const confirmEmptyBtn = document.getElementById('confirm-empty-btn');
+    const cancelEmptyBtn = document.getElementById('cancel-empty-btn');
+    const categoriesModalContainer = document.getElementById('categories-modal-container');
+    const editCategoriesBtn = document.getElementById('edit-categories-btn');
+    const categoriesForm = document.getElementById('categories-form');
+    const addCategoryBtn = document.getElementById('add-category-btn');
+    const categoriesModalCancelBtn = document.getElementById('categories-modal-cancel');
+    const categoriesListContainer = document.getElementById('categories-list-container');
+    const trendsModalContainer = document.getElementById('trends-modal-container');
+    const editTrendsBtn = document.getElementById('edit-trends-btn');
+    const trendsForm = document.getElementById('trends-form');
+    const addTrendBtn = document.getElementById('add-trend-btn');
+    const trendsModalCancelBtn = document.getElementById('trends-modal-cancel');
+    const trendsListContainer = document.getElementById('trends-list-container');
+    
+// ######################################################################
+// ##              INICIO DE LA SECCIÓN CORREGIDA Y MEJORADA             ##
+// ######################################################################
+
+// Botón para generar y descargar el reporte
+const adminDownloadReportBtn = document.getElementById('admin-download-report-btn');
+
+adminDownloadReportBtn.addEventListener('click', () => {
+    // --- 1. PREPARACIÓN ---
+    const reportDocument = document.documentElement.cloneNode(true);
+
+    // --- 2. INCRUSTAR DATOS ACTUALIZADOS ---
+    const updatedDatabaseString = `let database = ${JSON.stringify(database, null, 4)};`;
+    const scriptTagInClone = reportDocument.querySelector('script');
+
+    if (scriptTagInClone) {
+        let scriptContent = scriptTagInClone.innerHTML;
+        
+        // **LA MEJORA CLAVE ESTÁ AQUÍ**
+        // Antes de reescribir el script, desactivamos la carga desde localStorage en el reporte.
+        scriptContent = scriptContent.replace("loadDatabase();", "// loadDatabase(); // Desactivado en el reporte para asegurar que se muestren los datos incrustados.");
+
+        const databaseEndIndex = scriptContent.indexOf('// Funciones de persistencia en localStorage');
+        const logicAfterDatabase = scriptContent.substring(databaseEndIndex);
+        
+        scriptTagInClone.innerHTML = updatedDatabaseString + '\n\n' + logicAfterDatabase;
+    }
+
+    // --- 3. HACER EL ARCHIVO AUTOCONTENIDO (INCRUSTAR CSS) ---
+    const headInClone = reportDocument.querySelector('head');
+    const styleTag = document.createElement('style');
+    let allCssRules = '';
+    Array.from(document.styleSheets).forEach(sheet => {
+        try {
+            allCssRules += Array.from(sheet.cssRules).map(rule => rule.cssText).join('\n');
+        } catch (e) {
+            console.warn("No se pudo leer una hoja de estilos (CORS):", e);
+        }
+    });
+    styleTag.textContent = allCssRules;
+    headInClone.appendChild(styleTag);
+    reportDocument.querySelectorAll('link[rel="stylesheet"]').forEach(link => link.remove());
+
+    // --- 4. PREPARAR ESTADO INICIAL DE LA PÁGINA ---
+    const loginScreenClone = reportDocument.querySelector('#login-screen');
+    const dashboardScreenClone = reportDocument.querySelector('#dashboard-screen');
+    const adminScreenClone = reportDocument.querySelector('#admin-screen');
+
+    if (loginScreenClone) {
+        loginScreenClone.classList.remove('hidden-screen');
+        loginScreenClone.style.display = 'flex';
+    }
+    if (dashboardScreenClone) {
+        dashboardScreenClone.classList.add('hidden-screen');
+        dashboardScreenClone.style.display = 'none';
+    }
+    if (adminScreenClone) {
+        adminScreenClone.classList.add('hidden-screen');
+        adminScreenClone.style.display = 'none';
+    }
+    
+    // --- 5. GENERAR Y DESCARGAR EL ARCHIVO ---
+    const htmlContent = reportDocument.outerHTML;
+    const date = new Date();
+    const monthNames = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+    const month = monthNames[date.getMonth()];
+    const year = date.getFullYear();
+    const fileName = `reporte_evaluacion_${month}_${year}.html`;
+
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showModal('Éxito', `El reporte "${fileName}" ha sido generado y descargado.`);
+});
+
+// ######################################################################
+// ##                    FIN DE LA SECCIÓN CORREGIDA                   ##
+// ######################################################################
+
+    // Función para mostrar el modal de alerta
+    function showModal(title, message) {
+        modalTitle.textContent = title;
+        modalMessage.textContent = message;
+        modalContainer.classList.remove('hidden');
+    }
+
+    modalOkButton.addEventListener('click', () => {
+        modalContainer.classList.add('hidden');
+    });
+
+    function switchScreen(fromScreen, toScreen) {
+        fromScreen.classList.add('hidden-screen');
+        setTimeout(() => {
+            fromScreen.style.display = 'none';
+            toScreen.style.display = 'flex';
+            setTimeout(() => {
+                toScreen.classList.remove('hidden-screen');
+            }, 10);
+        }, 500);
+    }
+
+    function handleLogin() {
+        const username = userInput.value.trim().toLowerCase();
+        currentUser = database.users[username];
+
+        if (currentUser) {
+            if (currentUser.role === 'admin') {
+                renderAdminPanel();
+                switchScreen(loginScreen, adminScreen);
+            } else {
+                renderDashboard(currentUser.id);
+                switchScreen(loginScreen, dashboardScreen);
+            }
+        } else {
+            showModal('Error de Acceso', 'Usuario no encontrado. Por favor, verifica tu nombre de usuario.');
+        }
+    }
+
+    loginButton.addEventListener('click', handleLogin);
+    userInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            handleLogin();
+        }
+    });
+
+    logoutButton.addEventListener('click', () => {
+        switchScreen(dashboardScreen, loginScreen);
+        resetUI();
+    });
+
+    adminLogoutButton.addEventListener('click', () => {
+        switchScreen(adminScreen, loginScreen);
+        resetUI();
+    });
+
+    function resetUI() {
+        userInput.value = '';
+        document.getElementById('login-title').textContent = database.loginTexts.title;
+        document.getElementById('login-subtitle').textContent = database.loginTexts.subtitle;
+        document.getElementById('login-description').textContent = database.loginTexts.description;
+    }
+
+    function renderDashboard(userId) {
+        const user = database.users[userId];
+        userNameElement.textContent = user.name;
+        document.getElementById('general-score').textContent = user.generalScore;
+        document.getElementById('general-progress').style.width = `${user.generalScore * 10}%`;
+        document.getElementById('calls-score').textContent = user.callsScore;
+        document.getElementById('calls-progress').style.width = `${user.callsScore * 10}%`;
+        document.getElementById('general-comments').textContent = user.generalComments;
+        document.getElementById('eval-details-link').href = user.evalDetailsLink;
+        document.getElementById('plan-link').href = user.planLink;
+        document.getElementById('dashboard-title').textContent = user.dashboardTitle;
+        document.getElementById('score-2-months-ago').innerHTML = user.monthlyScores['Hace 2 Meses'];
+        document.getElementById('score-last-month').innerHTML = user.monthlyScores['Mes Anterior'];
+        document.getElementById('score-this-month').innerHTML = user.monthlyScores['Mes Actual'];
+        document.getElementById('major-improvement-text').textContent = user.improvement;
+        document.getElementById('critical-area-text').textContent = user.criticalArea;
+        document.getElementById('plan-instructions').textContent = user.planInstructions;
+
+        renderCategories();
+        renderBadges();
+
+        document.querySelector('[data-tab="resumen"]').click();
+    }
+
+    function renderCategories() {
+        categoriasContainer.innerHTML = '';
+        database.evaluationData.forEach(cat => {
+            const totalScore = cat.criteria.reduce((sum, c) => sum + c.score, 0);
+            const averageScore = (totalScore / cat.criteria.length).toFixed(1);
+            const scoreColor = averageScore >= 7.0 ? 'border-green-500' : 'border-red-500';
+
+            const card = document.createElement('div');
+            card.classList.add('category-card', 'bg-white', 'p-6', 'rounded-2xl', 'shadow-md', 'border', 'border-gray-200');
+            card.style.backgroundColor = cat.colors[0];
+
+            let criteriaHtml = cat.criteria.map(c => `
+                <li class="flex justify-between items-center text-gray-800">
+                    <span class="font-medium">${c.name}</span>
+                    <span class="text-sm font-semibold">${c.score.toFixed(1)}</span>
+                </li>
+            `).join('');
+
+            card.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-white flex items-center gap-2">${cat.category} ${cat.emoji}</h3>
+                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-white border-4 ${scoreColor} shadow-md text-gray-800 font-bold">${averageScore}</div>
+                </div>
+                <div class="flex justify-center items-center bg-white p-1 rounded-full mb-4">
+                    <button class="tab-comment-btn w-1/2 py-2 rounded-full text-sm font-semibold" data-tab-name="supervision" data-category="${cat.category}">Supervisión</button>
+                    <button class="tab-comment-btn w-1/2 py-2 rounded-full text-sm font-semibold" data-tab-name="quality" data-category="${cat.category}">Calidad</button>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-inner text-left text-gray-700 h-20 mb-4 overflow-y-auto">
+                    <p class="comment-text" data-comment-for="${cat.category}"></p>
+                </div>
+                <button class="toggle-criteria-btn w-full text-left py-2 px-4 flex justify-between items-center text-sm font-semibold rounded-lg text-white bg-opacity-30 hover:bg-opacity-50 transition duration-200">
+                    Criterios de Calificación
+                    <span class="arrow-icon">&#9660;</span>
+                </button>
+                <div class="criteria-content bg-white p-4 rounded-lg" data-criteria-for="${cat.category}">
+                    <ul class="space-y-2 text-sm text-left">
+                        ${criteriaHtml}
+                    </ul>
+                </div>
+            `;
+            categoriasContainer.appendChild(card);
+        });
+
+        document.querySelectorAll('.tab-comment-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const category = e.target.dataset.category;
+                const tabName = e.target.dataset.tabName;
+                const commentTextElement = document.querySelector(`.comment-text[data-comment-for="${category}"]`);
+                const categoryData = database.evaluationData.find(d => d.category === category);
+
+                document.querySelectorAll(`.tab-comment-btn[data-category="${category}"]`).forEach(b => {
+                    b.style.backgroundColor = 'transparent';
+                    b.style.color = '#4a5568';
+                });
+
+                e.target.style.backgroundColor = categoryData.colors[1];
+                e.target.style.color = 'white';
+                commentTextElement.textContent = categoryData.comments[tabName];
+            });
+        });
+
+        document.querySelectorAll('.toggle-criteria-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const card = btn.closest('.category-card');
+                const criteriaContent = card.querySelector('.criteria-content');
+                const arrowIcon = btn.querySelector('.arrow-icon');
+                
+                if (criteriaContent.classList.contains('open')) {
+                    criteriaContent.classList.remove('open');
+                    criteriaContent.style.maxHeight = '0';
+                } else {
+                    criteriaContent.classList.add('open');
+                    criteriaContent.style.maxHeight = criteriaContent.scrollHeight + 'px';
+                }
+                arrowIcon.classList.toggle('open');
+            });
+        });
+
+        document.querySelectorAll('.tab-comment-btn').forEach(btn => {
+            if (btn.dataset.tabName === 'supervision') {
+                btn.click();
+            }
+        });
+    }
+
+    function renderBadges() {
+        const badgesList = document.getElementById('badges-list');
+        const nextBadgesList = document.getElementById('next-badges-list');
+        badgesList.innerHTML = '';
+        nextBadgesList.innerHTML = '';
+
+        database.badges.forEach(badge => {
+            badgesList.innerHTML += `
+                <li class="flex items-start gap-3">
+                    <span class="text-2xl">${badge.icon}</span>
+                    <div>
+                        <h3 class="font-semibold text-lg">${badge.title}</h3>
+                        <p class="text-gray-600">${badge.description}</p>
+                    </div>
+                </li>
+            `;
+        });
+
+        database.nextBadges.forEach(badge => {
+            nextBadgesList.innerHTML += `
+                <li class="flex items-start gap-3">
+                    <span class="text-2xl">${badge.icon}</span>
+                    <div>
+                        <h3 class="font-semibold text-lg">${badge.title}</h3>
+                        <p class="text-gray-600">${badge.description}</p>
+                        ${badge.meta ? `<p class="text-gray-600 font-bold mt-1">Meta: ${badge.meta}</p>` : ''}
+                    </div>
+                </li>
+            `;
+        });
+    }
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            document.querySelectorAll('.tab-page').forEach(page => page.classList.add('hidden'));
+            tabs.forEach(t => t.classList.remove('bg-[#2a6aff]', 'text-white'));
+            
+            const tabId = e.target.dataset.tab;
+            document.getElementById(`${tabId}-content`).classList.remove('hidden');
+            e.target.classList.add('bg-[#2a6aff]', 'text-white');
+            
+            if (tabId === 'tendencias') {
+                renderTrendsChart();
+            }
+        });
+    });
+
+    function renderTrendsChart() {
+        const ctx = document.getElementById('performance-chart').getContext('2d');
+        const months = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'M8', 'M9', 'M10', 'M11', 'M12'];
+        const datasets = Object.keys(database.trendsData).map(key => ({
+            label: key,
+            data: database.trendsData[key],
+            borderColor: database.trendsColors[key],
+            fill: false,
+            tension: 0.4,
+            hidden: false
+        }));
+
+        if (chartInstance) {
+            chartInstance.destroy();
+        }
+
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                    }
+                },
+                scales: {
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Puntaje de Evaluación'
+                        },
+                        min: 0,
+                        max: 10,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Módulos'
+                        }
+                    }
+                }
+            }
+        });
+
+        const chartButtonsContainer = document.getElementById('chart-buttons-container');
+        chartButtonsContainer.innerHTML = `
+            <button id="select-all-btn" class="bg-gray-300 text-gray-800 py-2 px-4 rounded-xl text-sm transition-colors duration-200 hover:bg-gray-400">Seleccionar Todo</button>
+            <button id="deselect-all-btn" class="bg-gray-300 text-gray-800 py-2 px-4 rounded-xl text-sm transition-colors duration-200 hover:bg-gray-400">Desactivar Todo</button>
+        `;
+        Object.keys(database.trendsData).forEach(key => {
+            const button = document.createElement('button');
+            button.textContent = key;
+            button.dataset.category = key;
+            button.classList.add('bg-gray-300', 'text-gray-800', 'py-2', 'px-4', 'rounded-xl', 'text-sm', 'transition-colors', 'duration-200', 'hover:bg-gray-400', 'chart-category-btn');
+            button.addEventListener('click', () => {
+                const dataset = chartInstance.data.datasets.find(ds => ds.label === key);
+                if (dataset) {
+                    dataset.hidden = !dataset.hidden;
+                    chartInstance.update();
+                }
+            });
+            chartButtonsContainer.appendChild(button);
+        });
+        
+        document.getElementById('select-all-btn').addEventListener('click', () => {
+            chartInstance.data.datasets.forEach(dataset => dataset.hidden = false);
+            chartInstance.update();
+        });
+        document.getElementById('deselect-all-btn').addEventListener('click', () => {
+            chartInstance.data.datasets.forEach(dataset => dataset.hidden = true);
+            chartInstance.update();
+        });
+    }
+
+    // Lógica del Panel de Administrador
+    function renderAdminPanel() {
+        renderUsersTable();
+        document.getElementById('admin-login-title').value = database.loginTexts.title;
+        document.getElementById('admin-login-subtitle').value = database.loginTexts.subtitle;
+        document.getElementById('admin-login-description').value = database.loginTexts.description;
+    }
+
+    // Renderizar la tabla de usuarios
+    function renderUsersTable() {
+        usersTableBody.innerHTML = '';
+        const userList = Object.values(database.users).filter(u => u.role === 'user');
+        
+        userList.forEach(user => {
+            const row = document.createElement('tr');
+            row.dataset.userId = user.id;
+            
+            row.innerHTML = `
+                <td class="user-id">${user.id}</td>
+                <td class="user-name">${user.name}</td>
+                <td class="user-general-score">${user.generalScore}</td>
+                <td class="user-calls-score">${user.callsScore}</td>
+                <td class="user-comments">${user.generalComments.length > 50 ? user.generalComments.substring(0, 50) + '...' : user.generalComments}</td>
+                <td class="actions-cell">
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <button class="edit-user-btn bg-yellow-400 text-gray-800 py-1 px-3 rounded-full text-xs font-semibold hover:bg-yellow-500 transition duration-200">
+                            Editar
+                        </button>
+                        <button class="delete-user-btn bg-red-400 text-white py-1 px-3 rounded-full text-xs font-semibold hover:bg-red-500 transition duration-200">
+                            Eliminar
+                        </button>
+                        <button class="details-user-btn bg-blue-400 text-white py-1 px-3 rounded-full text-xs font-semibold hover:bg-blue-500 transition duration-200">
+                            Detalles
+                        </button>
+                    </div>
+                </td>
+            `;
+            usersTableBody.appendChild(row);
+        });
+    }
+
+    // Lógica para añadir/editar usuario
+    addUserBtn.addEventListener('click', () => {
+        userModalTitle.textContent = 'Añadir Nuevo Usuario';
+        userForm.reset();
+        userModalContainer.classList.remove('hidden');
+    });
+
+    userModalCancelBtn.addEventListener('click', () => {
+        userModalContainer.classList.add('hidden');
+    });
+
+    userForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const userId = document.getElementById('form-id').value.trim();
+        const userName = document.getElementById('form-name').value.trim();
+        const userRole = document.getElementById('form-role').value;
+        const generalScore = parseFloat(document.getElementById('form-general-score').value);
+        const callsScore = parseFloat(document.getElementById('form-calls-score').value);
+        const comments = document.getElementById('form-comments').value.trim();
+
+        if (database.users[userId] && userModalTitle.textContent === 'Añadir Nuevo Usuario') {
+            showModal('Error', 'El usuario ya existe. Por favor, elige otro ID.');
+            return;
+        }
+        
+        if (userModalTitle.textContent === 'Añadir Nuevo Usuario') {
+            const newUser = {
+                id: userId,
+                name: userName,
+                role: userRole,
+                generalScore: generalScore || 0,
+                callsScore: callsScore || 0,
+                generalComments: comments || '',
+                dashboardTitle: 'Resultados de Evaluación 📊',
+                evalDetailsLink: `https://example.com/detalles/${userId}`,
+                planLink: `https://example.com/plan-de-trabajo/${userId}`,
+                improvement: `La mayor mejora para ${userName} es...`,
+                criticalArea: `El área crítica para ${userName} es...`,
+                planInstructions: `Instrucciones del plan de mejora para ${userName}.`,
+                monthlyScores: {
+                    'Hace 2 Meses': '0.0',
+                    'Mes Anterior': '0.0',
+                    'Mes Actual': '0.0'
+                }
+            };
+            database.users[userId] = newUser;
+            showModal('Éxito', 'Usuario añadido correctamente.');
+        } else {
+            const currentId = userModalContainer.dataset.editingId;
+            const user = database.users[currentId];
+            if (user) {
+                user.id = userId;
+                user.name = userName;
+                user.role = userRole;
+                user.generalScore = generalScore;
+                user.callsScore = callsScore;
+                user.generalComments = comments;
+
+                if (currentId !== userId) {
+                    delete database.users[currentId];
+                    database.users[userId] = user;
+                }
+            }
+            showModal('Éxito', 'Usuario actualizado correctamente.');
+        }
+
+        userModalContainer.classList.add('hidden');
+        saveDatabase();
+        renderUsersTable();
+    });
+
+    // Delegación de eventos para la tabla
+    usersTableBody.addEventListener('click', (e) => {
+        const row = e.target.closest('tr');
+        if (!row) return;
+
+        const userId = row.dataset.userId;
+
+        if (e.target.classList.contains('edit-user-btn')) {
+            const user = database.users[userId];
+            if (user) {
+                userModalTitle.textContent = 'Editar Usuario';
+                document.getElementById('form-id').value = user.id;
+                document.getElementById('form-name').value = user.name;
+                document.getElementById('form-role').value = user.role;
+                document.getElementById('form-general-score').value = user.generalScore;
+                document.getElementById('form-calls-score').value = user.callsScore;
+                document.getElementById('form-comments').value = user.generalComments;
+                userModalContainer.dataset.editingId = userId;
+                userModalContainer.classList.remove('hidden');
+            }
+        } else if (e.target.classList.contains('delete-user-btn')) {
+            if (confirm(`¿Estás seguro de que quieres eliminar al usuario ${userId}?`)) {
+                delete database.users[userId];
+                saveDatabase();
+                renderUsersTable();
+                showModal('Éxito', 'Usuario eliminado correctamente.');
+            }
+        } else if (e.target.classList.contains('details-user-btn')) {
+            const user = database.users[userId];
+            if (user) {
+                populateDetailsModal(user);
+                detailsModalContainer.classList.remove('hidden');
+                detailsModalContainer.dataset.editingId = userId;
+            }
+        }
+    });
+
+    // Lógica para el modal de detalles
+    function populateDetailsModal(user) {
+        document.getElementById('details-modal-title').textContent = `Detalles de ${user.name}`;
+        document.getElementById('details-dashboard-title').value = user.dashboardTitle;
+        document.getElementById('details-eval-link').value = user.evalDetailsLink;
+        document.getElementById('details-plan-link').value = user.planLink;
+        document.getElementById('details-general-comments').value = user.generalComments;
+        document.getElementById('details-improvement').value = user.improvement;
+        document.getElementById('details-critical-area').value = user.criticalArea;
+        document.getElementById('details-plan-instructions').value = user.planInstructions;
+
+        // Populate Trends data
+        const trendsFormContainer = document.getElementById('trends-form-container');
+        trendsFormContainer.innerHTML = '';
+        Object.keys(database.trendsData).forEach(trend => {
+            trendsFormContainer.innerHTML += `
+                <div class="space-y-2 mb-4 p-2 border rounded-lg bg-white">
+                    <h5 class="font-bold">${trend}</h5>
+                    <div class="grid grid-cols-2 gap-2">
+                        ${database.trendsData[trend].map((score, index) => `
+                            <label class="text-xs">
+                                M${index + 1}:
+                                <input type="number" step="0.1" min="0" max="10" class="w-full p-1 border rounded" value="${score}" data-trend="${trend}" data-month="${index}">
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        });
+
+        // Populate Categories and Criteria data
+        const criteriaFormContainer = document.getElementById('criteria-form-container');
+        criteriaFormContainer.innerHTML = '';
+        database.evaluationData.forEach(category => {
+            criteriaFormContainer.innerHTML += `
+                <div class="bg-gray-100 p-4 rounded-xl">
+                    <h4 class="text-lg font-semibold mb-2">Categoría: ${category.category}</h4>
+                    <div id="criteria-for-${category.category.replace(/\s/g, '-')}" class="space-y-2">
+                        ${category.criteria.map(criteria => `
+                            <div class="flex items-center gap-2">
+                                <span class="flex-1 text-sm">${criteria.name}</span>
+                                <input type="number" step="0.1" min="0" max="10" class="w-20 p-1 border rounded text-right" value="${criteria.score}" data-category="${category.category}" data-criteria="${criteria.name}">
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    detailsForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const userId = detailsModalContainer.dataset.editingId;
+        const user = database.users[userId];
+        if (user) {
+            user.dashboardTitle = document.getElementById('details-dashboard-title').value;
+            user.evalDetailsLink = document.getElementById('details-eval-link').value;
+            user.planLink = document.getElementById('details-plan-link').value;
+            user.generalComments = document.getElementById('details-general-comments').value;
+            user.improvement = document.getElementById('details-improvement').value;
+            user.criticalArea = document.getElementById('details-critical-area').value;
+            user.planInstructions = document.getElementById('details-plan-instructions').value;
+
+            // Update Trends data
+            document.querySelectorAll('#trends-form-container input').forEach(input => {
+                const trend = input.dataset.trend;
+                const month = parseInt(input.dataset.month);
+                database.trendsData[trend][month] = parseFloat(input.value);
+            });
+
+            // Update Criteria scores
+            document.querySelectorAll('#criteria-form-container input').forEach(input => {
+                const category = input.dataset.category;
+                const criteriaName = input.dataset.criteria;
+                const categoryData = database.evaluationData.find(c => c.category === category);
+                if (categoryData) {
+                    const criteria = categoryData.criteria.find(c => c.name === criteriaName);
+                    if (criteria) {
+                        criteria.score = parseFloat(input.value);
+                    }
+                }
+            });
+
+            saveDatabase();
+            showModal('Éxito', 'Detalles de usuario actualizados correctamente.');
+            detailsModalContainer.classList.add('hidden');
+        }
+    });
+
+    detailsModalCancelBtn.addEventListener('click', () => { detailsModalContainer.classList.add('hidden'); });
+    detailsModalCancelTopBtn.addEventListener('click', () => { detailsModalContainer.classList.add('hidden'); });
+
+    // Lógica para vaciar la tabla
+    emptyTableBtn.addEventListener('click', () => {
+        confirmModalContainer.classList.remove('hidden');
+    });
+
+    confirmEmptyBtn.addEventListener('click', () => {
+        const adminUser = database.users['admin'];
+        database.users = { 'admin': adminUser };
+        saveDatabase();
+        renderUsersTable();
+        confirmModalContainer.classList.add('hidden');
+        showModal('Tabla Vaciada', 'Todos los datos de usuarios han sido eliminados correctamente.');
+    });
+
+    cancelEmptyBtn.addEventListener('click', () => {
+        confirmModalContainer.classList.add('hidden');
+    });
+
+    // Lógica para editar categorías/criterios
+    editCategoriesBtn.addEventListener('click', () => {
+        renderCategoriesModal();
+        categoriesModalContainer.classList.remove('hidden');
+    });
+    
+    function renderCategoriesModal() {
+        categoriesListContainer.innerHTML = '';
+        database.evaluationData.forEach(cat => {
+            const categoryDiv = document.createElement('div');
+            categoryDiv.classList.add('p-4', 'border', 'rounded-lg', 'bg-white', 'space-y-2');
+            categoryDiv.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <input type="text" class="category-name-input text-lg font-bold w-4/5 p-1 border rounded" value="${cat.category}">
+                    <button type="button" class="remove-category-btn text-red-500 font-bold text-xl leading-none">&times;</button>
+                </div>
+                <label class="block">Emoji: <input type="text" class="category-emoji-input w-20 p-1 border rounded" value="${cat.emoji}"></label>
+                <div class="space-y-1 mt-2 criteria-inputs">
+                    <h5 class="font-semibold text-sm">Criterios:</h5>
+                    ${cat.criteria.map(crit => `
+                        <div class="flex items-center gap-2">
+                            <input type="text" class="criteria-name-input flex-1 p-1 border rounded" value="${crit.name}">
+                            <button type="button" class="remove-criteria-btn text-red-500 font-bold text-xl leading-none">&times;</button>
+                        </div>
+                    `).join('')}
+                </div>
+                <button type="button" class="add-criteria-btn w-full bg-gray-100 text-gray-600 text-sm py-1 rounded-lg">Añadir Criterio</button>
+            `;
+            categoriesListContainer.appendChild(categoryDiv);
+        });
+    }
+
+    categoriesForm.addEventListener('click', (e) => {
+        if (e.target.classList.contains('add-criteria-btn')) {
+            const criteriaContainer = e.target.previousElementSibling;
+            const newCriteriaDiv = document.createElement('div');
+            newCriteriaDiv.classList.add('flex', 'items-center', 'gap-2');
+            newCriteriaDiv.innerHTML = `
+                <input type="text" class="criteria-name-input flex-1 p-1 border rounded" placeholder="Nuevo Criterio">
+                <button type="button" class="remove-criteria-btn text-red-500 font-bold text-xl leading-none">&times;</button>
+            `;
+            criteriaContainer.appendChild(newCriteriaDiv);
+        } else if (e.target.classList.contains('remove-category-btn')) {
+            if (categoriesListContainer.children.length > 1) {
+                e.target.closest('div.p-4').remove();
+            } else {
+                showModal('Error', 'Debe haber al menos una categoría.');
+            }
+        } else if (e.target.classList.contains('remove-criteria-btn')) {
+            const criteriaContainer = e.target.closest('.criteria-inputs');
+            if (criteriaContainer.children.length > 2) {
+                e.target.closest('div.flex').remove();
+            } else {
+                showModal('Error', 'Cada categoría debe tener al menos un criterio.');
+            }
+        }
+    });
+
+    addCategoryBtn.addEventListener('click', () => {
+        const newCategoryDiv = document.createElement('div');
+        newCategoryDiv.classList.add('p-4', 'border', 'rounded-lg', 'bg-white', 'space-y-2');
+        newCategoryDiv.innerHTML = `
+            <div class="flex justify-between items-center">
+                <input type="text" class="category-name-input text-lg font-bold w-4/5 p-1 border rounded" placeholder="Nueva Categoría">
+                <button type="button" class="remove-category-btn text-red-500 font-bold text-xl leading-none">&times;</button>
+            </div>
+            <label class="block">Emoji: <input type="text" class="category-emoji-input w-20 p-1 border rounded" placeholder="👍"></label>
+            <div class="space-y-1 mt-2 criteria-inputs">
+                <h5 class="font-semibold text-sm">Criterios:</h5>
+                <div class="flex items-center gap-2">
+                    <input type="text" class="criteria-name-input flex-1 p-1 border rounded" placeholder="Nuevo Criterio">
+                    <button type="button" class="remove-criteria-btn text-red-500 font-bold text-xl leading-none">&times;</button>
+                </div>
+            </div>
+            <button type="button" class="add-criteria-btn w-full bg-gray-100 text-gray-600 text-sm py-1 rounded-lg">Añadir Criterio</button>
+        `;
+        categoriesListContainer.appendChild(newCategoryDiv);
+    });
+
+    categoriesModalCancelBtn.addEventListener('click', () => {
+        categoriesModalContainer.classList.add('hidden');
+    });
+
+    categoriesForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const newEvaluationData = [];
+        document.querySelectorAll('#categories-list-container > div').forEach(div => {
+            const categoryName = div.querySelector('.category-name-input').value;
+            const emoji = div.querySelector('.category-emoji-input').value;
+            const criteriaList = [];
+            div.querySelectorAll('.criteria-name-input').forEach(input => {
+                criteriaList.push({ name: input.value, score: 0 }); // Score is 0 by default, edited in details
+            });
+            newEvaluationData.push({
+                category: categoryName,
+                emoji: emoji,
+                colors: ['#2a6aff', '#4f8bff'], // Default colors
+                comments: { supervision: '', quality: '' }, // Default comments
+                criteria: criteriaList
+            });
+        });
+        database.evaluationData = newEvaluationData;
+        saveDatabase();
+        categoriesModalContainer.classList.add('hidden');
+        showModal('Éxito', 'Categorías y criterios actualizados correctamente.');
+    });
+
+    // Lógica para editar tendencias
+    editTrendsBtn.addEventListener('click', () => {
+        renderTrendsModal();
+        trendsModalContainer.classList.remove('hidden');
+    });
+
+    function renderTrendsModal() {
+        trendsListContainer.innerHTML = '';
+        Object.keys(database.trendsData).forEach(trend => {
+            const trendDiv = document.createElement('div');
+            trendDiv.classList.add('p-4', 'border', 'rounded-lg', 'bg-white', 'space-y-2');
+            trendDiv.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <input type="text" class="trend-name-input text-lg font-bold w-4/5 p-1 border rounded" value="${trend}">
+                    <button type="button" class="remove-trend-btn text-red-500 font-bold text-xl leading-none">&times;</button>
+                </div>
+                <label class="block">Color: <input type="color" class="trend-color-input w-20 h-8 p-1 border rounded" value="${database.trendsColors[trend]}"></label>
+            `;
+            trendsListContainer.appendChild(trendDiv);
+        });
+    }
+
+    trendsForm.addEventListener('click', (e) => {
+        if (e.target.classList.contains('remove-trend-btn')) {
+            e.target.closest('div.p-4').remove();
+        }
+    });
+
+    addTrendBtn.addEventListener('click', () => {
+        const newTrendDiv = document.createElement('div');
+        newTrendDiv.classList.add('p-4', 'border', 'rounded-lg', 'bg-white', 'space-y-2');
+        newTrendDiv.innerHTML = `
+            <div class="flex justify-between items-center">
+                <input type="text" class="trend-name-input text-lg font-bold w-4/5 p-1 border rounded" placeholder="Nueva Tendencia">
+                <button type="button" class="remove-trend-btn text-red-500 font-bold text-xl leading-none">&times;</button>
+            </div>
+            <label class="block">Color: <input type="color" class="trend-color-input w-20 h-8 p-1 border rounded" value="#cccccc"></label>
+        `;
+        trendsListContainer.appendChild(newTrendDiv);
+    });
+
+    trendsModalCancelBtn.addEventListener('click', () => {
+        trendsModalContainer.classList.add('hidden');
+    });
+
+    trendsForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const newTrendsData = {};
+        const newTrendsColors = {};
+        document.querySelectorAll('#trends-list-container > div').forEach(div => {
+            const trendName = div.querySelector('.trend-name-input').value;
+            const trendColor = div.querySelector('.trend-color-input').value;
+            newTrendsData[trendName] = Array(12).fill(0); // Default scores
+            newTrendsColors[trendName] = trendColor;
+        });
+        database.trendsData = newTrendsData;
+        database.trendsColors = newTrendsColors;
+        saveDatabase();
+        trendsModalContainer.classList.add('hidden');
+        showModal('Éxito', 'Categorías de tendencias actualizadas correctamente.');
+    });
+
+    // Guardar configuración general del login
+    document.getElementById('save-general-settings-btn').addEventListener('click', () => {
+        database.loginTexts.title = document.getElementById('admin-login-title').value;
+        database.loginTexts.subtitle = document.getElementById('admin-login-subtitle').value;
+        database.loginTexts.description = document.getElementById('admin-login-description').value;
+        saveDatabase();
+        showModal('Configuración Guardada', 'Los textos de la pantalla de login han sido actualizados.');
+    });
+
+    // Cargar la configuración de login al inicio
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('login-title').textContent = database.loginTexts.title;
+        document.getElementById('login-subtitle').textContent = database.loginTexts.subtitle;
+        document.getElementById('login-description').textContent = database.loginTexts.description;
+    });
+</script>
+
+</body>
+</html>
