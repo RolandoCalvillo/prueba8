@@ -175,6 +175,7 @@
 </head>
 <body>
 
+<!-- Login Screen -->
 <div id="login-screen" class="container-wrapper">
     <div class="card max-w-md">
         <img src="https://i.postimg.cc/KzxV7m0Z/CNCI-VIRTUAL-LOGO.jpg" alt="Logo de la Universidad Virtual CNCI" class="mx-auto w-48 mb-6">
@@ -186,12 +187,18 @@
             <button id="login-button" class="w-full bg-[#2a6aff] text-white font-semibold py-3 px-6 rounded-xl transition duration-300 ease-in-out transform hover:scale-105 hover:bg-[#1a55ff] shadow-lg">
                 Consultar mi Evaluación ✨
             </button>
+            <!-- BOTÓN AÑADIDO -->
+            <button id="clear-data-button" class="mt-2 text-sm text-gray-500 hover:text-red-600 transition-colors duration-200">
+                Restaurar Versión Original / Limpiar Datos
+            </button>
         </div>
     </div>
 </div>
 
+<!-- Dashboard Screen -->
 <div id="dashboard-screen" class="container-wrapper hidden-screen">
     <div class="dashboard-container">
+        <!-- Dashboard Header -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
             <div class="flex-grow">
                 <h1 id="dashboard-title" class="text-3xl font-bold mb-1">Resultados de Evaluación 📊</h1>
@@ -202,6 +209,7 @@
             </button>
         </div>
 
+        <!-- Dashboard Tabs -->
         <div class="flex justify-between items-center bg-gray-100 p-2 rounded-xl mb-6 flex-wrap">
             <button class="tab-button w-1/4 py-3 px-2 rounded-xl text-sm md:text-base transition-colors duration-200" data-tab="resumen">Resumen General 📄</button>
             <button class="tab-button w-1/4 py-3 px-2 rounded-xl text-sm md:text-base transition-colors duration-200" data-tab="tendencias">Tendencias 📈</button>
@@ -209,9 +217,12 @@
             <button class="tab-button w-1/4 py-3 px-2 rounded-xl text-sm md:text-base transition-colors duration-200" data-tab="plan">Plan de Trabajo 💡</button>
         </div>
 
+        <!-- Tab Content -->
         <div id="tab-content">
+            <!-- Resumen General Tab -->
             <div id="resumen-content" class="tab-page">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <!-- Calificación General -->
                     <div class="bg-gray-100 p-6 rounded-2xl shadow-sm">
                         <h3 class="text-xl font-semibold mb-4">Calificación General ⭐</h3>
                         <div class="flex items-center gap-4">
@@ -221,6 +232,7 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Meta de Llamadas -->
                     <div class="bg-gray-100 p-6 rounded-2xl shadow-sm">
                         <h3 class="text-xl font-semibold mb-4">Meta de Llamadas 📞</h3>
                         <div class="flex items-center gap-4">
@@ -232,9 +244,12 @@
                     </div>
                 </div>
 
+                <!-- Categorías y Criterios de Evaluación -->
                 <div id="categorias-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                    </div>
+                    <!-- Cards will be injected here by JavaScript -->
+                </div>
 
+                <!-- Comentarios Generales -->
                 <div class="bg-gray-100 p-6 rounded-2xl shadow-sm mb-6">
                     <h3 class="text-xl font-semibold mb-4 text-left">Comentarios generales del Supervisor 📝</h3>
                     <p class="text-gray-700 text-left" id="general-comments"></p>
@@ -246,6 +261,7 @@
                 </div>
             </div>
 
+            <!-- Tendencias Tab -->
             <div id="tendencias-content" class="tab-page hidden">
                 <div class="bg-gray-100 p-6 rounded-2xl shadow-sm mb-6">
                     <h2 class="text-2xl font-bold mb-4">Gráfica Anual de Desempeño 🗓️</h2>
@@ -253,9 +269,11 @@
                         <canvas id="performance-chart"></canvas>
                     </div>
                     <div class="flex flex-wrap gap-4 justify-center mt-4" id="chart-buttons-container">
-                        </div>
+                        <!-- Category buttons will be injected here -->
+                    </div>
                 </div>
 
+                <!-- Comparativa Mensual -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <div class="bg-gray-100 p-6 rounded-2xl shadow-sm">
                         <h3 class="text-xl font-semibold mb-2">Hace 2 Meses </h3>
@@ -271,6 +289,7 @@
                     </div>
                 </div>
 
+                <!-- Métricas Destacadas -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="bg-green-100 p-6 rounded-2xl shadow-sm border border-green-300">
                         <h3 class="text-xl font-semibold mb-2 flex items-center gap-2">La Mayor Mejora ✅</h3>
@@ -283,19 +302,23 @@
                 </div>
             </div>
             
+            <!-- Insignias Tab -->
             <div id="insignias-content" class="tab-page hidden">
                 <div class="bg-gray-100 p-6 rounded-2xl shadow-sm mb-6">
                     <h2 class="text-2xl font-bold mb-4">Tus Insignias 🏆</h2>
                     <ul id="badges-list" class="space-y-4 text-left">
-                        </ul>
+                        <!-- Badges will be injected here -->
+                    </ul>
                 </div>
                 <div class="bg-gray-100 p-6 rounded-2xl shadow-sm">
                     <h2 class="text-2xl font-bold mb-4">Próximas Insignias 🚀</h2>
                     <ul id="next-badges-list" class="space-y-4 text-left">
-                        </ul>
+                        <!-- Next badges will be injected here -->
+                    </ul>
                 </div>
             </div>
 
+            <!-- Plan de Trabajo Tab -->
             <div id="plan-content" class="tab-page hidden">
                 <div class="bg-gray-100 p-6 rounded-2xl shadow-sm mb-6">
                     <h2 class="text-2xl font-bold mb-4">Plan de Mejora 🎯</h2>
@@ -309,6 +332,7 @@
     </div>
 </div>
 
+<!-- Admin Panel Screen -->
 <div id="admin-screen" class="container-wrapper hidden-screen">
     <div class="dashboard-container">
         <div class="flex justify-between items-center mb-6">
@@ -328,6 +352,7 @@
             </div>
         </div>
         
+        <!-- Sección de Edición General -->
         <div class="bg-gray-100 p-6 rounded-2xl shadow-sm mb-6">
             <h2 class="text-xl font-bold mb-4 flex items-center gap-2">Edición General 📄</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -349,6 +374,7 @@
             </button>
         </div>
 
+        <!-- Tabla de Edición de Usuarios -->
         <div class="bg-gray-100 p-6 rounded-2xl shadow-sm mb-6">
             <h2 class="text-xl font-bold mb-4 flex items-center gap-2">Tabla de Edición de Usuarios 👥</h2>
             <div class="table-container">
@@ -364,11 +390,13 @@
                         </tr>
                     </thead>
                     <tbody>
-                        </tbody>
+                        <!-- User rows will be injected here -->
+                    </tbody>
                 </table>
             </div>
         </div>
 
+        <!-- Sección de Edición de Categorías y Criterios -->
         <div class="bg-gray-100 p-6 rounded-2xl shadow-sm mb-6">
             <h2 class="text-xl font-bold mb-4">Edición de Categorías y Criterios de Evaluación 📝</h2>
             <p class="text-gray-700 mb-4">Los cambios realizados aquí se aplicarán a la plantilla de todos los usuarios.</p>
@@ -377,6 +405,7 @@
             </button>
         </div>
         
+        <!-- Sección de Edición de Tendencias -->
         <div class="bg-gray-100 p-6 rounded-2xl shadow-sm mb-6">
             <h2 class="text-xl font-bold mb-4">Edición de Tendencias 📈</h2>
             <p class="text-gray-700 mb-4">Añade, edita o elimina las categorías del gráfico de líneas.</p>
@@ -385,6 +414,7 @@
             </button>
         </div>
         
+        <!-- Botón de Descarga -->
         <div class="flex justify-center mt-8 mb-4">
              <button id="admin-download-report-btn" class="bg-gray-600 text-white font-semibold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105 hover:bg-gray-700 shadow-lg">
                 Generar y Descargar Reporte 📥
@@ -393,6 +423,7 @@
     </div>
 </div>
 
+<!-- Modal Container -->
 <div id="modal-container" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white p-8 rounded-xl shadow-lg text-center max-w-sm w-full">
         <h3 id="modal-title" class="text-xl font-bold mb-4"></h3>
@@ -403,6 +434,7 @@
     </div>
 </div>
 
+<!-- Modal para añadir/editar usuario -->
 <div id="user-modal-container" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white p-8 rounded-xl shadow-lg max-w-md w-full">
         <h3 id="user-modal-title" class="text-2xl font-bold mb-4 text-center">Añadir Nuevo Usuario</h3>
@@ -442,6 +474,7 @@
     </div>
 </div>
 
+<!-- Modal de detalles de usuario -->
 <div id="details-modal-container" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white p-8 rounded-xl shadow-lg max-w-2xl w-full h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center mb-4">
@@ -449,6 +482,7 @@
             <button type="button" id="details-modal-cancel-top" class="bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-gray-400">Cancelar</button>
         </div>
         <form id="details-form" class="space-y-6">
+            <!-- Sección de Títulos y Enlaces -->
             <div class="bg-gray-100 p-4 rounded-xl">
                 <h4 class="text-lg font-semibold mb-2">Títulos y Enlaces del Dashboard</h4>
                 <div class="space-y-2">
@@ -467,6 +501,7 @@
                 </div>
             </div>
             
+            <!-- Sección de Comentarios y Métricas -->
             <div class="bg-gray-100 p-4 rounded-xl">
                 <h4 class="text-lg font-semibold mb-2">Comentarios y Métricas</h4>
                 <label class="block">
@@ -487,14 +522,18 @@
                 </label>
             </div>
 
+            <!-- Sección de Tendencias (Datos de la Gráfica) -->
             <div class="bg-gray-100 p-4 rounded-xl">
                 <h4 class="text-lg font-semibold mb-2">Datos de Tendencias (Gráfica)</h4>
                 <div id="trends-form-container" class="space-y-4">
-                    </div>
+                    <!-- Dynamic trend inputs will be injected here -->
+                </div>
             </div>
 
+            <!-- Sección de Categorías y Criterios -->
             <div id="criteria-form-container" class="space-y-4">
-                </div>
+                <!-- Dynamic category/criteria inputs will be injected here -->
+            </div>
 
             <div class="flex justify-between gap-4 mt-6">
                 <button type="button" id="details-modal-cancel" class="bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-gray-400">Cancelar</button>
@@ -504,6 +543,7 @@
     </div>
 </div>
 
+<!-- Modal de Confirmación para Vaciar Tabla -->
 <div id="confirm-modal-container" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white p-8 rounded-xl shadow-lg text-center max-w-sm w-full">
         <h3 class="text-xl font-bold mb-4 text-red-600">⚠️ Confirmar Eliminación</h3>
@@ -515,12 +555,14 @@
     </div>
 </div>
 
+<!-- Modal de Edición de Categorías/Criterios -->
 <div id="categories-modal-container" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white p-8 rounded-xl shadow-lg max-w-md w-full h-[90vh] overflow-y-auto">
         <h3 class="text-2xl font-bold mb-4 text-center">Edición de Categorías</h3>
         <form id="categories-form" class="space-y-4">
             <div id="categories-list-container" class="space-y-4">
-                </div>
+                <!-- Categories will be injected here -->
+            </div>
             <button type="button" id="add-category-btn" class="w-full bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg transition duration-300 hover:bg-gray-300">
                 Añadir Nueva Categoría
             </button>
@@ -532,12 +574,14 @@
     </div>
 </div>
 
+<!-- Modal de Edición de Tendencias -->
 <div id="trends-modal-container" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white p-8 rounded-xl shadow-lg max-w-md w-full h-[90vh] overflow-y-auto">
         <h3 class="text-2xl font-bold mb-4 text-center">Edición de Tendencias</h3>
         <form id="trends-form" class="space-y-4">
             <div id="trends-list-container" class="space-y-4">
-                </div>
+                <!-- Trends will be injected here -->
+            </div>
             <button type="button" id="add-trend-btn" class="w-full bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg transition duration-300 hover:bg-gray-300">
                 Añadir Nueva Tendencia
             </button>
@@ -1598,7 +1642,7 @@ adminDownloadReportBtn.addEventListener('click', () => {
         showModal('Éxito', 'Categorías de tendencias actualizadas correctamente.');
     });
 
-// Guardar configuración general del login (CORREGIDO)
+    // Guardar configuración general del login (CORREGIDO)
     document.getElementById('save-general-settings-btn').addEventListener('click', () => {
         // 1. Leer los nuevos valores desde los campos del formulario.
         const newTitle = document.getElementById('admin-login-title').value;
@@ -1632,3 +1676,4 @@ adminDownloadReportBtn.addEventListener('click', () => {
 
 </body>
 </html>
+
