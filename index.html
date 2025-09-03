@@ -215,11 +215,20 @@
 
                 <!-- Sección de Categorías -->
                 <div class="mb-8 bg-gray-50 rounded-xl p-6">
-                    <div class="flex justify-between items-center">
+                    <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl font-bold text-gray-800">📋 Edición de Categorías y Criterios de Evaluación</h2>
                         <button id="editCategoriesBtn" class="bg-[#2a6aff] hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-all">
                             ✏️ Editar Categorías
                         </button>
+                    </div>
+                    <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                        <div class="flex items-center space-x-2">
+                            <div class="text-blue-600">🔄</div>
+                            <div>
+                                <h4 class="font-semibold text-blue-800">Sincronización Automática</h4>
+                                <p class="text-sm text-blue-600">Los cambios en categorías y criterios se aplicarán automáticamente a todos los usuarios existentes.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -253,6 +262,11 @@
                 <div>
                     <label class="block text-gray-700 text-sm font-medium mb-2">Puntaje General</label>
                     <input type="number" id="userGeneralScore" min="0" max="100" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Contraseña</label>
+                    <input type="password" id="userPassword" placeholder="Dejar vacío para mantener actual" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]">
+                    <p class="text-xs text-gray-500 mt-1">💡 Dejar vacío para no cambiar la contraseña</p>
                 </div>
                 <div>
                     <label class="block text-gray-700 text-sm font-medium mb-2">Comentarios</label>
@@ -298,11 +312,60 @@
                             <option value="admin">Administrador</option>
                         </select>
                     </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-medium mb-2">Nueva Contraseña</label>
+                        <input type="password" id="detailsUserPassword" placeholder="Dejar vacío para mantener actual" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]">
+                        <p class="text-xs text-gray-500 mt-1">💡 Solo completar si deseas cambiar la contraseña</p>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-gray-700 text-sm font-medium mb-2">Comentarios Generales</label>
                     <textarea id="detailsGeneralComments" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]"></textarea>
                 </div>
+                <!-- Sección de Insignias -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-4">🏆 Insignias del Usuario</h4>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-lg text-center">
+                            <input type="checkbox" id="badgeExcellence" class="mb-2">
+                            <div class="text-3xl mb-2">🥇</div>
+                            <label for="badgeExcellence" class="font-semibold text-yellow-800 cursor-pointer">Excelencia</label>
+                            <p class="text-xs text-yellow-600 mt-1">Calificación superior a 90</p>
+                        </div>
+                        <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg text-center">
+                            <input type="checkbox" id="badgeCommunicator" class="mb-2">
+                            <div class="text-3xl mb-2">📞</div>
+                            <label for="badgeCommunicator" class="font-semibold text-blue-800 cursor-pointer">Comunicador</label>
+                            <p class="text-xs text-blue-600 mt-1">Excelente en llamadas</p>
+                        </div>
+                        <div class="bg-green-50 border border-green-200 p-4 rounded-lg text-center">
+                            <input type="checkbox" id="badgeConsistent" class="mb-2">
+                            <div class="text-3xl mb-2">⭐</div>
+                            <label for="badgeConsistent" class="font-semibold text-green-800 cursor-pointer">Consistente</label>
+                            <p class="text-xs text-green-600 mt-1">Desempeño estable</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección de Plan de Trabajo -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-4">📋 Plan de Mejora Personalizado</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-medium mb-2">🎯 Objetivos del Próximo Período</label>
+                            <textarea id="userObjectives" rows="3" placeholder="Ej: Mejorar seguimiento a población morosa, Incrementar reingresos..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-medium mb-2">📚 Recursos Recomendados</label>
+                            <textarea id="userResources" rows="3" placeholder="Ej: Manual de retención estudiantil, Curso de comunicación efectiva..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-medium mb-2">💡 Notas Adicionales</label>
+                            <textarea id="userAdditionalNotes" rows="2" placeholder="Observaciones especiales, fortalezas destacadas..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]"></textarea>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="categoriesSection">
                     <h4 class="text-lg font-semibold text-gray-800 mb-4">📋 Categorías de Evaluación</h4>
                     <div id="categoriesContainer" class="space-y-4">
@@ -427,45 +490,53 @@
 
                     <!-- Insignias -->
                     <div id="insignias" class="tab-content hidden">
-                        <h3 class="text-2xl font-bold text-gray-800 mb-6">🏆 Sistema de Insignias</h3>
-                        <div class="grid md:grid-cols-3 gap-6">
-                            <div class="bg-yellow-50 border-2 border-yellow-200 p-6 rounded-xl text-center">
-                                <div class="text-4xl mb-3">🥇</div>
-                                <h4 class="font-semibold text-yellow-800">Excelencia</h4>
-                                <p class="text-sm text-yellow-600 mt-2">Calificación superior a 90</p>
-                            </div>
-                            <div class="bg-blue-50 border-2 border-blue-200 p-6 rounded-xl text-center">
-                                <div class="text-4xl mb-3">📞</div>
-                                <h4 class="font-semibold text-blue-800">Comunicador</h4>
-                                <p class="text-sm text-blue-600 mt-2">Excelente en llamadas</p>
-                            </div>
-                            <div class="bg-green-50 border-2 border-green-200 p-6 rounded-xl text-center">
-                                <div class="text-4xl mb-3">⭐</div>
-                                <h4 class="font-semibold text-green-800">Consistente</h4>
-                                <p class="text-sm text-green-600 mt-2">Desempeño estable</p>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-6">🏆 Mis Insignias</h3>
+                        <div id="userBadges" class="grid md:grid-cols-3 gap-6 mb-8">
+                            <!-- Las insignias se cargarán dinámicamente -->
+                        </div>
+                        <div class="bg-gray-50 p-6 rounded-xl">
+                            <h4 class="text-lg font-semibold text-gray-800 mb-3">📋 Todas las Insignias Disponibles</h4>
+                            <div class="grid md:grid-cols-3 gap-6">
+                                <div class="bg-yellow-50 border-2 border-yellow-200 p-6 rounded-xl text-center opacity-60">
+                                    <div class="text-4xl mb-3">🥇</div>
+                                    <h4 class="font-semibold text-yellow-800">Excelencia</h4>
+                                    <p class="text-sm text-yellow-600 mt-2">Calificación superior a 90</p>
+                                </div>
+                                <div class="bg-blue-50 border-2 border-blue-200 p-6 rounded-xl text-center opacity-60">
+                                    <div class="text-4xl mb-3">📞</div>
+                                    <h4 class="font-semibold text-blue-800">Comunicador</h4>
+                                    <p class="text-sm text-blue-600 mt-2">Excelente en llamadas</p>
+                                </div>
+                                <div class="bg-green-50 border-2 border-green-200 p-6 rounded-xl text-center opacity-60">
+                                    <div class="text-4xl mb-3">⭐</div>
+                                    <h4 class="font-semibold text-green-800">Consistente</h4>
+                                    <p class="text-sm text-green-600 mt-2">Desempeño estable</p>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Plan de Trabajo -->
                     <div id="plan" class="tab-content hidden">
-                        <h3 class="text-2xl font-bold text-gray-800 mb-6">📋 Plan de Mejora</h3>
-                        <div class="space-y-4">
-                            <div class="bg-blue-50 border-l-4 border-[#2a6aff] p-4 rounded-r-lg">
-                                <h4 class="font-semibold text-[#2a6aff] mb-2">🎯 Objetivos del Próximo Período</h4>
-                                <ul class="text-gray-700 space-y-1">
-                                    <li>• Mejorar seguimiento a población morosa</li>
-                                    <li>• Incrementar reingresos de estudiantes</li>
-                                    <li>• Optimizar procesos académicos</li>
-                                </ul>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-6">📋 Mi Plan de Mejora Personalizado</h3>
+                        <div class="space-y-6">
+                            <div class="bg-blue-50 border-l-4 border-[#2a6aff] p-6 rounded-r-lg">
+                                <h4 class="font-semibold text-[#2a6aff] mb-3">🎯 Objetivos del Próximo Período</h4>
+                                <div id="userObjectivesDisplay" class="text-gray-700 whitespace-pre-line">
+                                    Cargando objetivos personalizados...
+                                </div>
                             </div>
-                            <div class="bg-orange-50 border-l-4 border-[#ff8500] p-4 rounded-r-lg">
-                                <h4 class="font-semibold text-[#ff8500] mb-2">📚 Recursos Recomendados</h4>
-                                <ul class="text-gray-700 space-y-1">
-                                    <li>• Manual de retención estudiantil</li>
-                                    <li>• Curso de comunicación efectiva</li>
-                                    <li>• Taller de uso de CRM</li>
-                                </ul>
+                            <div class="bg-orange-50 border-l-4 border-[#ff8500] p-6 rounded-r-lg">
+                                <h4 class="font-semibold text-[#ff8500] mb-3">📚 Recursos Recomendados</h4>
+                                <div id="userResourcesDisplay" class="text-gray-700 whitespace-pre-line">
+                                    Cargando recursos personalizados...
+                                </div>
+                            </div>
+                            <div id="additionalNotesSection" class="bg-green-50 border-l-4 border-green-500 p-6 rounded-r-lg">
+                                <h4 class="font-semibold text-green-700 mb-3">💡 Notas Adicionales</h4>
+                                <div id="userAdditionalNotesDisplay" class="text-gray-700 whitespace-pre-line">
+                                    Cargando notas adicionales...
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -557,6 +628,16 @@
                     role: 'user',
                     generalScore: 87,
                     generalComments: 'Excelente desempeño en retención y reincorporación. Se destaca por su seguimiento oportuno a estudiantes morosos y uso efectivo del CRM.',
+                    badges: {
+                        excellence: false,
+                        communicator: true,
+                        consistent: true
+                    },
+                    workPlan: {
+                        objectives: 'Mejorar seguimiento a población morosa\nIncrementar reingresos de estudiantes\nOptimizar procesos académicos',
+                        resources: 'Manual de retención estudiantil\nCurso de comunicación efectiva\nTaller de uso de CRM',
+                        additionalNotes: 'Estudiante destacada en comunicación. Continuar fortaleciendo habilidades técnicas.'
+                    },
                     categories: {
                         'RETENCIÓN': { score: 90, criteria: ['Seguimiento a población morosa', 'Total de bajas de alumnos con morosidad', 'Uso adecuado y oportuno de la columna de retención de CRM', 'Retención y bajas pagadas'] },
                         'REINCORPORACIÓN': { score: 85, criteria: ['Bajas por no pago', 'Búsqueda y difusión de promociones', 'Registro y seguimiento', 'Cierre de prospectos', 'Total de reingresos'] },
@@ -574,6 +655,16 @@
                     role: 'user',
                     generalScore: 92,
                     generalComments: 'Muy buen desempeño general. Excelente manejo de procesos académicos y comunicación con estudiantes.',
+                    badges: {
+                        excellence: true,
+                        communicator: true,
+                        consistent: true
+                    },
+                    workPlan: {
+                        objectives: 'Mantener excelencia en todas las áreas\nMentoría a nuevos compañeros\nLiderar proyectos de mejora continua',
+                        resources: 'Certificación avanzada en CRM\nCurso de liderazgo\nTaller de mentoring',
+                        additionalNotes: 'Empleado modelo con todas las insignias. Candidato ideal para roles de liderazgo.'
+                    },
                     categories: {
                         'RETENCIÓN': { score: 95, criteria: ['Seguimiento a población morosa', 'Total de bajas de alumnos con morosidad', 'Uso adecuado y oportuno de la columna de retención de CRM', 'Retención y bajas pagadas'] },
                         'REINCORPORACIÓN': { score: 90, criteria: ['Bajas por no pago', 'Búsqueda y difusión de promociones', 'Registro y seguimiento', 'Cierre de prospectos', 'Total de reingresos'] },
@@ -958,6 +1049,8 @@
             document.getElementById('generalComments').textContent = currentUser.generalComments;
             
             loadEvaluationCategories();
+            loadUserBadges();
+            loadUserWorkPlan();
         }
 
         function loadEvaluationCategories() {
@@ -996,6 +1089,65 @@
                 
                 container.appendChild(categoryCard);
             });
+        }
+
+        function loadUserBadges() {
+            const badgesContainer = document.getElementById('userBadges');
+            badgesContainer.innerHTML = '';
+            
+            if (!currentUser.badges) return;
+            
+            const badges = [
+                { key: 'excellence', name: 'Excelencia', emoji: '🥇', description: 'Calificación superior a 90', bgColor: 'bg-yellow-50', borderColor: 'border-yellow-200', textColor: 'text-yellow-800' },
+                { key: 'communicator', name: 'Comunicador', emoji: '📞', description: 'Excelente en llamadas', bgColor: 'bg-blue-50', borderColor: 'border-blue-200', textColor: 'text-blue-800' },
+                { key: 'consistent', name: 'Consistente', emoji: '⭐', description: 'Desempeño estable', bgColor: 'bg-green-50', borderColor: 'border-green-200', textColor: 'text-green-800' }
+            ];
+            
+            badges.forEach(badge => {
+                if (currentUser.badges[badge.key]) {
+                    const badgeElement = document.createElement('div');
+                    badgeElement.className = `${badge.bgColor} border-2 ${badge.borderColor} p-6 rounded-xl text-center transform hover:scale-105 transition-all`;
+                    badgeElement.innerHTML = `
+                        <div class="text-4xl mb-3">${badge.emoji}</div>
+                        <h4 class="font-semibold ${badge.textColor}">${badge.name}</h4>
+                        <p class="text-sm ${badge.textColor.replace('800', '600')} mt-2">${badge.description}</p>
+                        <div class="mt-3 text-xs ${badge.textColor} font-medium">✅ OBTENIDA</div>
+                    `;
+                    badgesContainer.appendChild(badgeElement);
+                }
+            });
+            
+            if (badgesContainer.children.length === 0) {
+                badgesContainer.innerHTML = `
+                    <div class="col-span-3 text-center py-8 text-gray-500">
+                        <div class="text-4xl mb-3">🎯</div>
+                        <p>¡Sigue trabajando para obtener tus primeras insignias!</p>
+                    </div>
+                `;
+            }
+        }
+
+        function loadUserWorkPlan() {
+            const objectivesDisplay = document.getElementById('userObjectivesDisplay');
+            const resourcesDisplay = document.getElementById('userResourcesDisplay');
+            const notesDisplay = document.getElementById('userAdditionalNotesDisplay');
+            const notesSection = document.getElementById('additionalNotesSection');
+            
+            if (currentUser.workPlan) {
+                objectivesDisplay.textContent = currentUser.workPlan.objectives || 'No hay objetivos específicos definidos aún.';
+                resourcesDisplay.textContent = currentUser.workPlan.resources || 'No hay recursos recomendados específicos aún.';
+                
+                if (currentUser.workPlan.additionalNotes && currentUser.workPlan.additionalNotes.trim()) {
+                    notesDisplay.textContent = currentUser.workPlan.additionalNotes;
+                    notesSection.classList.remove('hidden');
+                } else {
+                    notesSection.classList.add('hidden');
+                }
+            } else {
+                objectivesDisplay.textContent = 'Plan de trabajo personalizado en desarrollo...';
+                resourcesDisplay.textContent = 'Recursos serán asignados según tu desempeño...';
+                notesSection.classList.add('hidden');
+            }
         }
 
         function switchTab(tabName) {
@@ -1163,31 +1315,76 @@
                 role: 'user',
                 generalScore: parseInt(document.getElementById('userGeneralScore').value),
                 generalComments: document.getElementById('userComments').value,
-                categories: getDefaultCategories()
+                categories: getDefaultCategories(),
+                badges: {
+                    excellence: false,
+                    communicator: false,
+                    consistent: false
+                },
+                workPlan: {
+                    objectives: '',
+                    resources: '',
+                    additionalNotes: ''
+                }
             };
+
+            const newPassword = document.getElementById('userPassword').value;
 
             try {
                 if (isFirebaseInitialized) {
                     const { setDoc, doc } = window.firebaseFunctions;
+                    
+                    // Si es un usuario existente, preservar datos adicionales
+                    if (currentEditingUser) {
+                        const existingUser = allUsers.find(u => u.username === currentEditingUser);
+                        if (existingUser) {
+                            userData.badges = existingUser.badges || userData.badges;
+                            userData.workPlan = existingUser.workPlan || userData.workPlan;
+                            userData.categories = existingUser.categories || userData.categories;
+                        }
+                    }
+                    
                     await setDoc(doc(window.firebaseDb, 'users', userData.username), userData);
                     
-                    // Crear usuario en Authentication si no existe
+                    // Sincronizar categorías con el template actual
+                    await updateUserCategoriesFromTemplate(userData.username);
+                    
+                    // Crear o actualizar usuario en Authentication
                     const email = nicknameToEmail[userData.username];
                     if (email) {
                         try {
                             const { createUserWithEmailAndPassword } = window.firebaseFunctions;
-                            await createUserWithEmailAndPassword(window.firebaseAuth, email, 'password123');
+                            const password = newPassword || 'password123';
+                            await createUserWithEmailAndPassword(window.firebaseAuth, email, password);
                         } catch (error) {
-                            if (error.code !== 'auth/email-already-in-use') {
+                            if (error.code === 'auth/email-already-in-use' && newPassword) {
+                                // Si el usuario existe y queremos cambiar la contraseña
+                                showNotification('⚠️ Usuario guardado. Para cambiar contraseña usa la sección de detalles', 'info');
+                            } else if (error.code !== 'auth/email-already-in-use') {
                                 console.error('Error creando usuario en Auth:', error);
                             }
                         }
+                    }
+                } else {
+                    // Modo local
+                    if (currentEditingUser) {
+                        const existingUserIndex = allUsers.findIndex(u => u.username === currentEditingUser);
+                        if (existingUserIndex !== -1) {
+                            // Preservar datos adicionales en modo local
+                            userData.badges = allUsers[existingUserIndex].badges || userData.badges;
+                            userData.workPlan = allUsers[existingUserIndex].workPlan || userData.workPlan;
+                            userData.categories = syncUserCategories(allUsers[existingUserIndex].categories || {}, categoriesData);
+                            allUsers[existingUserIndex] = userData;
+                        }
+                    } else {
+                        userData.categories = syncUserCategories({}, categoriesData);
+                        allUsers.push(userData);
                     }
                 }
                 
                 closeUserModal();
                 await loadUsersTable();
-                showNotification('✅ Usuario guardado correctamente');
+                showNotification('✅ Usuario guardado y sincronizado correctamente');
             } catch (error) {
                 console.error('Error guardando usuario:', error);
                 showNotification('❌ Error al guardar el usuario', 'error');
@@ -1203,6 +1400,33 @@
                 };
             });
             return categories;
+        }
+
+        // Función para actualizar categorías cuando se crea un nuevo usuario
+        async function updateUserCategoriesFromTemplate(username) {
+            if (!isFirebaseInitialized) return;
+            
+            try {
+                const { getDoc, doc, updateDoc } = window.firebaseFunctions;
+                
+                // Obtener el template actual
+                const templateDoc = await getDoc(doc(window.firebaseDb, 'config', 'evaluationTemplate'));
+                if (!templateDoc.exists()) return;
+                
+                const currentTemplate = templateDoc.data();
+                const userDoc = await getDoc(doc(window.firebaseDb, 'users', username));
+                
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    const syncedCategories = syncUserCategories(userData.categories || {}, currentTemplate.categories);
+                    
+                    await updateDoc(doc(window.firebaseDb, 'users', username), {
+                        categories: syncedCategories
+                    });
+                }
+            } catch (error) {
+                console.error('Error actualizando categorías del usuario:', error);
+            }
         }
 
         function editUser(username) {
@@ -1237,6 +1461,17 @@
             document.getElementById('detailsUserRole').value = user.role || 'user';
             document.getElementById('detailsGeneralScore').value = user.generalScore || 0;
             document.getElementById('detailsGeneralComments').value = user.generalComments || '';
+            document.getElementById('detailsUserPassword').value = ''; // Siempre vacío por seguridad
+
+            // Cargar insignias
+            document.getElementById('badgeExcellence').checked = user.badges?.excellence || false;
+            document.getElementById('badgeCommunicator').checked = user.badges?.communicator || false;
+            document.getElementById('badgeConsistent').checked = user.badges?.consistent || false;
+
+            // Cargar plan de trabajo
+            document.getElementById('userObjectives').value = user.workPlan?.objectives || '';
+            document.getElementById('userResources').value = user.workPlan?.resources || '';
+            document.getElementById('userAdditionalNotes').value = user.workPlan?.additionalNotes || '';
 
             loadUserCategories(user);
 
@@ -1295,8 +1530,20 @@
                 role: document.getElementById('detailsUserRole').value,
                 generalScore: parseInt(document.getElementById('detailsGeneralScore').value),
                 generalComments: document.getElementById('detailsGeneralComments').value,
-                categories: {}
+                categories: {},
+                badges: {
+                    excellence: document.getElementById('badgeExcellence').checked,
+                    communicator: document.getElementById('badgeCommunicator').checked,
+                    consistent: document.getElementById('badgeConsistent').checked
+                },
+                workPlan: {
+                    objectives: document.getElementById('userObjectives').value,
+                    resources: document.getElementById('userResources').value,
+                    additionalNotes: document.getElementById('userAdditionalNotes').value
+                }
             };
+
+            const newPassword = document.getElementById('detailsUserPassword').value;
 
             document.querySelectorAll('.category-score').forEach(input => {
                 const categoryName = input.dataset.category;
@@ -1312,6 +1559,17 @@
                 if (isFirebaseInitialized) {
                     const { setDoc, doc } = window.firebaseFunctions;
                     await setDoc(doc(window.firebaseDb, 'users', currentEditingUser), userData);
+                    
+                    // Cambiar contraseña si se proporcionó una nueva
+                    if (newPassword && newPassword.trim() !== '') {
+                        try {
+                            // Nota: En un entorno real, necesitarías usar Firebase Admin SDK para cambiar contraseñas
+                            // Por ahora, solo mostramos una notificación
+                            showNotification('⚠️ Datos guardados. El cambio de contraseña requiere configuración adicional', 'info');
+                        } catch (error) {
+                            console.error('Error cambiando contraseña:', error);
+                        }
+                    }
                 }
                 
                 closeDetailsModal();
@@ -1451,22 +1709,81 @@
             });
 
             try {
+                showNotification('🔄 Actualizando categorías y sincronizando usuarios...', 'info');
+                
                 if (isFirebaseInitialized) {
-                    const { setDoc, doc } = window.firebaseFunctions;
+                    const { setDoc, doc, getDocs, collection, query, where, updateDoc } = window.firebaseFunctions;
+                    
+                    // 1. Guardar el nuevo template de categorías
                     await setDoc(doc(window.firebaseDb, 'config', 'evaluationTemplate'), {
                         categories: updatedCategories
                     });
+                    
+                    // 2. Obtener todos los usuarios existentes
+                    const usersQuery = query(collection(window.firebaseDb, 'users'), where('role', '==', 'user'));
+                    const querySnapshot = await getDocs(usersQuery);
+                    
+                    // 3. Actualizar cada usuario con las nuevas categorías
+                    const updatePromises = [];
+                    querySnapshot.forEach((userDoc) => {
+                        const userData = userDoc.data();
+                        const updatedUserCategories = syncUserCategories(userData.categories || {}, updatedCategories);
+                        
+                        updatePromises.push(
+                            updateDoc(doc(window.firebaseDb, 'users', userData.username), {
+                                categories: updatedUserCategories
+                            })
+                        );
+                    });
+                    
+                    // Ejecutar todas las actualizaciones en paralelo
+                    await Promise.all(updatePromises);
+                    
+                    showNotification(`✅ Categorías actualizadas y sincronizadas con ${updatePromises.length} usuarios`);
+                } else {
+                    // Modo local - actualizar usuarios en memoria
+                    allUsers.forEach(user => {
+                        user.categories = syncUserCategories(user.categories || {}, updatedCategories);
+                    });
+                    
+                    showNotification('✅ Categorías actualizadas localmente');
                 }
                 
                 categoriesData = [...updatedCategories];
                 evaluationTemplate = { categories: updatedCategories };
                 
                 closeCategoriesModal();
-                showNotification('✅ Categorías actualizadas correctamente');
+                await loadUsersTable(); // Recargar la tabla para mostrar cambios
+                
             } catch (error) {
                 console.error('Error guardando categorías:', error);
                 showNotification('❌ Error al guardar las categorías', 'error');
             }
+        }
+
+        // Función para sincronizar categorías de usuario con el template actualizado
+        function syncUserCategories(userCategories, newCategoriesTemplate) {
+            const syncedCategories = {};
+            
+            newCategoriesTemplate.forEach(templateCategory => {
+                const existingCategory = userCategories[templateCategory.name];
+                
+                if (existingCategory) {
+                    // La categoría existe - mantener el puntaje pero actualizar criterios
+                    syncedCategories[templateCategory.name] = {
+                        score: existingCategory.score || 0,
+                        criteria: [...templateCategory.criteria] // Usar los nuevos criterios del template
+                    };
+                } else {
+                    // Nueva categoría - crear con puntaje 0
+                    syncedCategories[templateCategory.name] = {
+                        score: 0,
+                        criteria: [...templateCategory.criteria]
+                    };
+                }
+            });
+            
+            return syncedCategories;
         }
 
         // ===== GENERACIÓN DE REPORTE =====
@@ -1575,5 +1892,5 @@
         window.addCriteria = addCriteria;
         window.removeCriteria = removeCriteria;
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'979879ba068f20aa',t:'MTc1NjkzNjM2MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9798b398764220aa',t:'MTc1NjkzODczMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
