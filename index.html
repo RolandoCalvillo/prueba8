@@ -233,12 +233,7 @@
                     </div>
                 </div>
 
-                <!-- Botón de Descarga de Reporte -->
-                <div class="mt-8 text-center">
-                    <button id="downloadReportBtn" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm transition-all">
-                        Generar y Descargar Reporte 📥
-                    </button>
-                </div>
+
             </div>
         </div>
     </div>
@@ -261,8 +256,8 @@
                     <input type="text" id="userNameInput" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]">
                 </div>
                 <div>
-                    <label class="block text-gray-700 text-sm font-medium mb-2">Puntaje General</label>
-                    <input type="number" id="userGeneralScore" min="0" max="100" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Puntaje General (Calculado Automáticamente)</label>
+                    <input type="text" id="userGeneralScore" readonly class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600" placeholder="Se calcula automáticamente del promedio de categorías">
                 </div>
                 <div>
                     <label class="block text-gray-700 text-sm font-medium mb-2">Contraseña</label>
@@ -303,8 +298,8 @@
                         <input type="text" id="detailsUserName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]">
                     </div>
                     <div>
-                        <label class="block text-gray-700 text-sm font-medium mb-2">Puntaje General</label>
-                        <input type="number" id="detailsGeneralScore" min="0" max="100" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]">
+                        <label class="block text-gray-700 text-sm font-medium mb-2">Puntaje General (Calculado Automáticamente)</label>
+                        <input type="text" id="detailsGeneralScore" readonly class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600" placeholder="Se calcula del promedio de categorías">
                     </div>
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-2">Rol</label>
@@ -667,14 +662,85 @@
                         additionalNotes: 'Estudiante destacada en comunicación. Continuar fortaleciendo habilidades técnicas.'
                     },
                     categories: {
-                        'RETENCIÓN': { score: 90, criteria: ['Seguimiento a población morosa', 'Total de bajas de alumnos con morosidad', 'Uso adecuado y oportuno de la columna de retención de CRM', 'Retención y bajas pagadas'] },
-                        'REINCORPORACIÓN': { score: 85, criteria: ['Bajas por no pago', 'Búsqueda y difusión de promociones', 'Registro y seguimiento', 'Cierre de prospectos', 'Total de reingresos'] },
-                        'PROCESOS': { score: 88, criteria: ['Búsqueda de alumnos por estatus y perfil: semana 1 a la semana 4', 'Procesos académicos', 'Trámites escolares'] },
-                        'LLAMADA': { score: 92, criteria: ['Se presenta con su nombre e identificación de la Universidad', 'Maneja motivo de la llamada de manera adecuada'] },
-                        'WHATSAPP': { score: 83, criteria: ['Emplea redacción adecuada', 'Crea bocetos', 'Responde todos los mensajes', 'Contesta preguntas en un rango de 12 horas o menos', 'Brinda soluciones pertinentes', 'Propone llamada para una mejor explicación', 'Es empático (a)'] },
-                        'CORREO ELECTRÓNICO': { score: 89, criteria: ['Emplea redacción adecuada', 'Crea bocetos previos a enviar', 'Responde todos los mensajes', 'Contesta preguntas en un rango de 12 horas o menos', 'Atiende en tiempo la asignación de correos institucionales', 'Brinda soluciones pertinentes', 'Propone llamada para una mejor explicación', 'Es empático (a)', 'Mantiene control sobre sus emociones en casos difíciles'] },
-                        'VIVA ENGAGE': { score: 86, criteria: ['La reunión previa a la publicación se realiza de forma exitosa', 'Se nota una excelente organización y trabajo en equipo', 'Se utilizan imágenes, videos o elementos gráficos llamativos y bien diseñados', 'Se publica en la fecha establecida sin retrasos'] },
-                        'ACTIVIDADES ADMINISTRATIVAS': { score: 91, criteria: ['Asigna y actualiza perfiles', 'Especifica a través de que medio abordó al alumno', 'Registra en tiempo (diario) sus actividades en el reporte de seguimiento CRM', 'Organiza sus tiempos para cumplir con el % mínimo (90%) de contactación', 'Logra el % mínimo de contactación'] }
+                        'RETENCIÓN': { 
+                            score: 9.0, 
+                            criteria: [
+                                { name: 'Seguimiento a población morosa', score: 9.0 },
+                                { name: 'Total de bajas de alumnos con morosidad', score: 8.5 },
+                                { name: 'Uso adecuado y oportuno de la columna de retención de CRM', score: 9.5 },
+                                { name: 'Retención y bajas pagadas', score: 9.0 }
+                            ]
+                        },
+                        'REINCORPORACIÓN': { 
+                            score: 8.5, 
+                            criteria: [
+                                { name: 'Bajas por no pago', score: 8.0 },
+                                { name: 'Búsqueda y difusión de promociones', score: 9.0 },
+                                { name: 'Registro y seguimiento', score: 8.5 },
+                                { name: 'Cierre de prospectos', score: 8.0 },
+                                { name: 'Total de reingresos', score: 9.0 }
+                            ]
+                        },
+                        'PROCESOS': { 
+                            score: 8.8, 
+                            criteria: [
+                                { name: 'Búsqueda de alumnos por estatus y perfil: semana 1 a la semana 4', score: 9.0 },
+                                { name: 'Procesos académicos', score: 8.5 },
+                                { name: 'Trámites escolares', score: 9.0 }
+                            ]
+                        },
+                        'LLAMADA': { 
+                            score: 9.2, 
+                            criteria: [
+                                { name: 'Se presenta con su nombre e identificación de la Universidad', score: 9.5 },
+                                { name: 'Maneja motivo de la llamada de manera adecuada', score: 8.9 }
+                            ]
+                        },
+                        'WHATSAPP': { 
+                            score: 8.3, 
+                            criteria: [
+                                { name: 'Emplea redacción adecuada', score: 8.5 },
+                                { name: 'Crea bocetos', score: 8.0 },
+                                { name: 'Responde todos los mensajes', score: 9.0 },
+                                { name: 'Contesta preguntas en un rango de 12 horas o menos', score: 8.0 },
+                                { name: 'Brinda soluciones pertinentes', score: 8.5 },
+                                { name: 'Propone llamada para una mejor explicación', score: 8.0 },
+                                { name: 'Es empático (a)', score: 8.1 }
+                            ]
+                        },
+                        'CORREO ELECTRÓNICO': { 
+                            score: 8.9, 
+                            criteria: [
+                                { name: 'Emplea redacción adecuada', score: 9.0 },
+                                { name: 'Crea bocetos previos a enviar', score: 8.5 },
+                                { name: 'Responde todos los mensajes', score: 9.0 },
+                                { name: 'Contesta preguntas en un rango de 12 horas o menos', score: 9.5 },
+                                { name: 'Atiende en tiempo la asignación de correos institucionales', score: 8.5 },
+                                { name: 'Brinda soluciones pertinentes', score: 9.0 },
+                                { name: 'Propone llamada para una mejor explicación', score: 8.5 },
+                                { name: 'Es empático (a)', score: 9.0 },
+                                { name: 'Mantiene control sobre sus emociones en casos difíciles', score: 9.1 }
+                            ]
+                        },
+                        'VIVA ENGAGE': { 
+                            score: 8.6, 
+                            criteria: [
+                                { name: 'La reunión previa a la publicación se realiza de forma exitosa', score: 8.5 },
+                                { name: 'Se nota una excelente organización y trabajo en equipo', score: 9.0 },
+                                { name: 'Se utilizan imágenes, videos o elementos gráficos llamativos y bien diseñados', score: 8.0 },
+                                { name: 'Se publica en la fecha establecida sin retrasos', score: 8.9 }
+                            ]
+                        },
+                        'ACTIVIDADES ADMINISTRATIVAS': { 
+                            score: 9.1, 
+                            criteria: [
+                                { name: 'Asigna y actualiza perfiles', score: 9.0 },
+                                { name: 'Especifica a través de que medio abordó al alumno', score: 9.5 },
+                                { name: 'Registra en tiempo (diario) sus actividades en el reporte de seguimiento CRM', score: 9.0 },
+                                { name: 'Organiza sus tiempos para cumplir con el % mínimo (90%) de contactación', score: 8.5 },
+                                { name: 'Logra el % mínimo de contactación', score: 9.5 }
+                            ]
+                        }
                     }
                 },
                 {
@@ -695,14 +761,85 @@
                         additionalNotes: 'Empleado modelo con todas las insignias. Candidato ideal para roles de liderazgo.'
                     },
                     categories: {
-                        'RETENCIÓN': { score: 95, criteria: ['Seguimiento a población morosa', 'Total de bajas de alumnos con morosidad', 'Uso adecuado y oportuno de la columna de retención de CRM', 'Retención y bajas pagadas'] },
-                        'REINCORPORACIÓN': { score: 90, criteria: ['Bajas por no pago', 'Búsqueda y difusión de promociones', 'Registro y seguimiento', 'Cierre de prospectos', 'Total de reingresos'] },
-                        'PROCESOS': { score: 91, criteria: ['Búsqueda de alumnos por estatus y perfil: semana 1 a la semana 4', 'Procesos académicos', 'Trámites escolares'] },
-                        'LLAMADA': { score: 94, criteria: ['Se presenta con su nombre e identificación de la Universidad', 'Maneja motivo de la llamada de manera adecuada'] },
-                        'WHATSAPP': { score: 88, criteria: ['Emplea redacción adecuada', 'Crea bocetos', 'Responde todos los mensajes', 'Contesta preguntas en un rango de 12 horas o menos', 'Brinda soluciones pertinentes', 'Propone llamada para una mejor explicación', 'Es empático (a)'] },
-                        'CORREO ELECTRÓNICO': { score: 93, criteria: ['Emplea redacción adecuada', 'Crea bocetos previos a enviar', 'Responde todos los mensajes', 'Contesta preguntas en un rango de 12 horas o menos', 'Atiende en tiempo la asignación de correos institucionales', 'Brinda soluciones pertinentes', 'Propone llamada para una mejor explicación', 'Es empático (a)', 'Mantiene control sobre sus emociones en casos difíciles'] },
-                        'VIVA ENGAGE': { score: 89, criteria: ['La reunión previa a la publicación se realiza de forma exitosa', 'Se nota una excelente organización y trabajo en equipo', 'Se utilizan imágenes, videos o elementos gráficos llamativos y bien diseñados', 'Se publica en la fecha establecida sin retrasos'] },
-                        'ACTIVIDADES ADMINISTRATIVAS': { score: 96, criteria: ['Asigna y actualiza perfiles', 'Especifica a través de que medio abordó al alumno', 'Registra en tiempo (diario) sus actividades en el reporte de seguimiento CRM', 'Organiza sus tiempos para cumplir con el % mínimo (90%) de contactación', 'Logra el % mínimo de contactación'] }
+                        'RETENCIÓN': { 
+                            score: 9.5, 
+                            criteria: [
+                                { name: 'Seguimiento a población morosa', score: 9.5 },
+                                { name: 'Total de bajas de alumnos con morosidad', score: 9.0 },
+                                { name: 'Uso adecuado y oportuno de la columna de retención de CRM', score: 10.0 },
+                                { name: 'Retención y bajas pagadas', score: 9.5 }
+                            ]
+                        },
+                        'REINCORPORACIÓN': { 
+                            score: 9.0, 
+                            criteria: [
+                                { name: 'Bajas por no pago', score: 9.0 },
+                                { name: 'Búsqueda y difusión de promociones', score: 9.5 },
+                                { name: 'Registro y seguimiento', score: 8.5 },
+                                { name: 'Cierre de prospectos', score: 9.0 },
+                                { name: 'Total de reingresos', score: 9.0 }
+                            ]
+                        },
+                        'PROCESOS': { 
+                            score: 9.1, 
+                            criteria: [
+                                { name: 'Búsqueda de alumnos por estatus y perfil: semana 1 a la semana 4', score: 9.0 },
+                                { name: 'Procesos académicos', score: 9.5 },
+                                { name: 'Trámites escolares', score: 8.8 }
+                            ]
+                        },
+                        'LLAMADA': { 
+                            score: 9.4, 
+                            criteria: [
+                                { name: 'Se presenta con su nombre e identificación de la Universidad', score: 9.5 },
+                                { name: 'Maneja motivo de la llamada de manera adecuada', score: 9.3 }
+                            ]
+                        },
+                        'WHATSAPP': { 
+                            score: 8.8, 
+                            criteria: [
+                                { name: 'Emplea redacción adecuada', score: 9.0 },
+                                { name: 'Crea bocetos', score: 8.5 },
+                                { name: 'Responde todos los mensajes', score: 9.5 },
+                                { name: 'Contesta preguntas en un rango de 12 horas o menos', score: 8.5 },
+                                { name: 'Brinda soluciones pertinentes', score: 9.0 },
+                                { name: 'Propone llamada para una mejor explicación', score: 8.5 },
+                                { name: 'Es empático (a)', score: 8.6 }
+                            ]
+                        },
+                        'CORREO ELECTRÓNICO': { 
+                            score: 9.3, 
+                            criteria: [
+                                { name: 'Emplea redacción adecuada', score: 9.5 },
+                                { name: 'Crea bocetos previos a enviar', score: 9.0 },
+                                { name: 'Responde todos los mensajes', score: 9.5 },
+                                { name: 'Contesta preguntas en un rango de 12 horas o menos', score: 9.0 },
+                                { name: 'Atiende en tiempo la asignación de correos institucionales', score: 9.5 },
+                                { name: 'Brinda soluciones pertinentes', score: 9.0 },
+                                { name: 'Propone llamada para una mejor explicación', score: 9.5 },
+                                { name: 'Es empático (a)', score: 9.0 },
+                                { name: 'Mantiene control sobre sus emociones en casos difíciles', score: 9.7 }
+                            ]
+                        },
+                        'VIVA ENGAGE': { 
+                            score: 8.9, 
+                            criteria: [
+                                { name: 'La reunión previa a la publicación se realiza de forma exitosa', score: 9.0 },
+                                { name: 'Se nota una excelente organización y trabajo en equipo', score: 9.5 },
+                                { name: 'Se utilizan imágenes, videos o elementos gráficos llamativos y bien diseñados', score: 8.0 },
+                                { name: 'Se publica en la fecha establecida sin retrasos', score: 9.1 }
+                            ]
+                        },
+                        'ACTIVIDADES ADMINISTRATIVAS': { 
+                            score: 9.6, 
+                            criteria: [
+                                { name: 'Asigna y actualiza perfiles', score: 9.5 },
+                                { name: 'Especifica a través de que medio abordó al alumno', score: 10.0 },
+                                { name: 'Registra en tiempo (diario) sus actividades en el reporte de seguimiento CRM', score: 9.5 },
+                                { name: 'Organiza sus tiempos para cumplir con el % mínimo (90%) de contactación', score: 9.0 },
+                                { name: 'Logra el % mínimo de contactación', score: 10.0 }
+                            ]
+                        }
                     }
                 }
             ]
@@ -860,8 +997,7 @@
             // Admin Panel Event Listeners
             setupAdminEventListeners();
             
-            // Download Report Event Listener
-            document.getElementById('downloadReportBtn').addEventListener('click', generateAndDownloadReport);
+
         }
 
         function setupAdminEventListeners() {
@@ -1076,11 +1212,35 @@
 
         // ===== FUNCIONES DEL DASHBOARD =====
 
+        function calculateGeneralScore(categories) {
+            if (!categories || Object.keys(categories).length === 0) return 0;
+            
+            const scores = Object.values(categories).map(category => category.score || 0);
+            const average = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+            return Math.round(average * 10) / 10; // Redondear a 1 decimal
+        }
+
+        function calculateCategoryScore(criteria) {
+            if (!criteria || criteria.length === 0) return 0;
+            
+            const scores = criteria.map(criterion => {
+                if (typeof criterion === 'object' && criterion.score !== undefined) {
+                    return criterion.score;
+                }
+                return 0;
+            });
+            
+            const average = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+            return Math.round(average * 10) / 10; // Redondear a 1 decimal
+        }
+
         function loadUserData() {
             if (!currentUser) return;
             
             document.getElementById('userName').textContent = currentUser.name;
-            document.getElementById('generalScore').textContent = currentUser.generalScore + '/100';
+            // Calcular puntaje general como promedio de todas las categorías
+            const generalScore = calculateGeneralScore(currentUser.categories);
+            document.getElementById('generalScore').textContent = generalScore + '/10';
             document.getElementById('generalComments').textContent = currentUser.generalComments;
             
             loadEvaluationCategories();
@@ -1098,27 +1258,40 @@
                 const categoryCard = document.createElement('div');
                 categoryCard.className = 'bg-white border border-gray-200 rounded-xl p-6 card-shadow slide-in';
                 
-                const criteriaList = categoryData.criteria.map(criteria => 
-                    `<span class="inline-block bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm mr-2 mb-2">${criteria}</span>`
-                ).join('');
+                // Crear lista de criterios con calificaciones individuales
+                const criteriaList = categoryData.criteria.map(criteria => {
+                    if (typeof criteria === 'object' && criteria.name && criteria.score !== undefined) {
+                        return `<div class="flex justify-between items-center bg-gray-50 px-3 py-2 rounded-lg mb-2">
+                            <span class="text-gray-700 text-sm">${criteria.name}</span>
+                            <span class="font-semibold text-[#2a6aff] text-sm">${criteria.score}/10</span>
+                        </div>`;
+                    } else {
+                        // Compatibilidad con formato anterior
+                        return `<span class="inline-block bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm mr-2 mb-2">${criteria}</span>`;
+                    }
+                }).join('');
+                
+                // Calcular porcentaje para la barra de progreso (score/10 * 100)
+                const progressPercentage = (categoryData.score / 10) * 100;
                 
                 categoryCard.innerHTML = `
                     <div class="flex justify-between items-start mb-4">
                         <h4 class="text-lg font-semibold text-gray-800">${categoryName}</h4>
                         <div class="text-right">
                             <div class="text-2xl font-bold text-[#2a6aff]">${categoryData.score}</div>
-                            <div class="text-sm text-gray-500">puntos</div>
+                            <div class="text-sm text-gray-500">/10</div>
                         </div>
                     </div>
                     <div class="mb-4">
-                        <div class="bg-gray-200 rounded-full h-2">
-                            <div class="bg-gradient-to-r from-[#2a6aff] to-[#ff8500] h-2 rounded-full transition-all duration-500" 
-                                 style="width: ${categoryData.score}%"></div>
+                        <div class="bg-gray-200 rounded-full h-3">
+                            <div class="bg-gradient-to-r from-[#2a6aff] to-[#ff8500] h-3 rounded-full transition-all duration-500" 
+                                 style="width: ${progressPercentage}%"></div>
                         </div>
+                        <div class="text-xs text-gray-500 mt-1 text-center">${progressPercentage.toFixed(1)}%</div>
                     </div>
                     <div class="space-y-2">
                         <p class="text-sm text-gray-600 font-medium">Criterios evaluados:</p>
-                        <div>${criteriaList}</div>
+                        <div class="space-y-1">${criteriaList}</div>
                     </div>
                 `;
                 
@@ -1292,7 +1465,7 @@
                         <td class="px-4 py-3 text-sm text-gray-900">
                             <span class="bg-gray-100 px-2 py-1 rounded font-mono text-xs">${currentPassword}</span>
                         </td>
-                        <td class="px-4 py-3 text-sm text-gray-900">${user.generalScore || 0}/100</td>
+                        <td class="px-4 py-3 text-sm text-gray-900">${calculateGeneralScore(user.categories)}/10</td>
                         <td class="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">${shortComments}</td>
                         <td class="px-4 py-3 text-sm space-x-2">
                             <button onclick="editUser('${user.username}')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs transition-all">
@@ -1358,7 +1531,6 @@
                 username: document.getElementById('userId').value,
                 name: document.getElementById('userNameInput').value,
                 role: 'user',
-                generalScore: parseInt(document.getElementById('userGeneralScore').value),
                 generalComments: document.getElementById('userComments').value,
                 categories: getDefaultCategories(),
                 badges: {
@@ -1502,6 +1674,40 @@
 
         // ===== MODAL DE DETALLES =====
 
+        function updateCategoryScore(categoryName) {
+            // Obtener todas las calificaciones de criterios para esta categoría
+            const criteriaScores = document.querySelectorAll(`[data-category="${categoryName}"].criteria-score`);
+            const scores = Array.from(criteriaScores).map(input => parseFloat(input.value) || 0);
+            
+            // Calcular promedio
+            const average = scores.length > 0 ? scores.reduce((sum, score) => sum + score, 0) / scores.length : 0;
+            const roundedAverage = Math.round(average * 10) / 10;
+            
+            // Actualizar display del puntaje de categoría
+            const scoreDisplay = document.querySelector(`[data-category="${categoryName}"].category-score-display`);
+            if (scoreDisplay) {
+                scoreDisplay.textContent = roundedAverage;
+            }
+            
+            // Actualizar puntaje general
+            updateGeneralScore();
+        }
+
+        function updateGeneralScore() {
+            const categoryScores = document.querySelectorAll('.category-score-display');
+            const scores = Array.from(categoryScores).map(display => parseFloat(display.textContent) || 0);
+            
+            if (scores.length > 0) {
+                const average = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+                const roundedAverage = Math.round(average * 10) / 10;
+                
+                const generalScoreInput = document.getElementById('detailsGeneralScore');
+                if (generalScoreInput) {
+                    generalScoreInput.value = roundedAverage + '/10';
+                }
+            }
+        }
+
         function showUserDetails(username) {
             const user = allUsers.find(u => u.username === username);
             if (!user) return;
@@ -1509,7 +1715,7 @@
             document.getElementById('detailsUserId').value = user.username || '';
             document.getElementById('detailsUserName').value = user.name || '';
             document.getElementById('detailsUserRole').value = user.role || 'user';
-            document.getElementById('detailsGeneralScore').value = user.generalScore || 0;
+            document.getElementById('detailsGeneralScore').value = calculateGeneralScore(user.categories) + '/10';
             document.getElementById('detailsGeneralComments').value = user.generalComments || '';
             document.getElementById('detailsUserPassword').value = ''; // Siempre vacío por seguridad
 
@@ -1540,19 +1746,45 @@
                     const categoryDiv = document.createElement('div');
                     categoryDiv.className = 'bg-gray-50 p-4 rounded-lg';
                     
-                    const criteriaInputs = categoryData.criteria.map((criteria, index) => 
-                        `<input type="text" value="${criteria}" class="criteria-input w-full px-3 py-1 border border-gray-300 rounded mb-2" data-category="${categoryName}" data-index="${index}">`
-                    ).join('');
+                    // Crear inputs para criterios con calificaciones individuales
+                    const criteriaInputs = categoryData.criteria.map((criteria, index) => {
+                        let criteriaName = '';
+                        let criteriaScore = 0;
+                        
+                        if (typeof criteria === 'object' && criteria.name && criteria.score !== undefined) {
+                            criteriaName = criteria.name;
+                            criteriaScore = criteria.score;
+                        } else {
+                            // Compatibilidad con formato anterior
+                            criteriaName = criteria;
+                            criteriaScore = 0;
+                        }
+                        
+                        return `
+                            <div class="flex items-center space-x-2 mb-2">
+                                <input type="text" value="${criteriaName}" 
+                                       class="criteria-name flex-1 px-3 py-1 border border-gray-300 rounded text-sm" 
+                                       data-category="${categoryName}" data-index="${index}">
+                                <input type="number" value="${criteriaScore}" min="0" max="10" step="0.1"
+                                       class="criteria-score w-20 px-2 py-1 border border-gray-300 rounded text-sm text-center" 
+                                       data-category="${categoryName}" data-index="${index}"
+                                       onchange="updateCategoryScore('${categoryName}')">
+                                <span class="text-xs text-gray-500">/10</span>
+                            </div>
+                        `;
+                    }).join('');
 
                     categoryDiv.innerHTML = `
                         <div class="flex justify-between items-center mb-3">
                             <h5 class="font-semibold text-gray-800">${categoryName}</h5>
-                            <input type="number" value="${categoryData.score}" min="0" max="100" 
-                                   class="category-score w-20 px-2 py-1 border border-gray-300 rounded" 
-                                   data-category="${categoryName}">
+                            <div class="text-right">
+                                <span class="category-score-display text-lg font-bold text-[#2a6aff]" data-category="${categoryName}">${categoryData.score}</span>
+                                <span class="text-sm text-gray-500">/10</span>
+                                <div class="text-xs text-gray-400">(Promedio automático)</div>
+                            </div>
                         </div>
                         <div class="space-y-2">
-                            <label class="block text-sm font-medium text-gray-700">Criterios:</label>
+                            <label class="block text-sm font-medium text-gray-700">Criterios y Calificaciones:</label>
                             ${criteriaInputs}
                         </div>
                     `;
@@ -1578,7 +1810,6 @@
                 username: document.getElementById('detailsUserId').value,
                 name: document.getElementById('detailsUserName').value,
                 role: document.getElementById('detailsUserRole').value,
-                generalScore: parseInt(document.getElementById('detailsGeneralScore').value),
                 generalComments: document.getElementById('detailsGeneralComments').value,
                 categories: {},
                 badges: {
@@ -1607,14 +1838,25 @@
                 userData.password = userCredentials[currentEditingUser]?.password || 'password123';
             }
 
-            document.querySelectorAll('.category-score').forEach(input => {
-                const categoryName = input.dataset.category;
-                const score = parseInt(input.value);
+            // Recopilar datos de categorías con criterios y calificaciones
+            const categoryNames = [...new Set(Array.from(document.querySelectorAll('[data-category]')).map(el => el.dataset.category))];
+            
+            categoryNames.forEach(categoryName => {
+                const criteriaNames = document.querySelectorAll(`[data-category="${categoryName}"].criteria-name`);
+                const criteriaScores = document.querySelectorAll(`[data-category="${categoryName}"].criteria-score`);
                 
-                const criteriaInputs = document.querySelectorAll(`[data-category="${categoryName}"].criteria-input`);
-                const criteria = Array.from(criteriaInputs).map(input => input.value);
+                const criteria = Array.from(criteriaNames).map((nameInput, index) => ({
+                    name: nameInput.value,
+                    score: parseFloat(criteriaScores[index]?.value) || 0
+                }));
                 
-                userData.categories[categoryName] = { score, criteria };
+                // Calcular el puntaje de la categoría como promedio de criterios
+                const categoryScore = calculateCategoryScore(criteria);
+                
+                userData.categories[categoryName] = { 
+                    score: categoryScore, 
+                    criteria: criteria 
+                };
             });
 
             try {
@@ -1952,5 +2194,5 @@
         window.addCriteria = addCriteria;
         window.removeCriteria = removeCriteria;
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9798bfa3c65220aa',t:'MTc1NjkzOTIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9798cb60b1b520aa',t:'MTc1NjkzOTcwNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
