@@ -3,1677 +3,1234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evaluación de Desempeño</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Evaluación Modular - Universidad Virtual CNCI</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+        import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, where } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+        import { getAnalytics } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js';
+        
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDf2ns9wzXixZHiWO5_kL1OnDr9iYbAaTI",
+            authDomain: "instrumentoevaluacioncnci.firebaseapp.com",
+            projectId: "instrumentoevaluacioncnci",
+            storageBucket: "instrumentoevaluacioncnci.firebasestorage.app",
+            messagingSenderId: "979030591942",
+            appId: "1:979030591942:web:5efcac6a4675de473a4ac7",
+            measurementId: "G-4PDCMV8LC4"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const analytics = getAnalytics(app);
+        
+        // Make Firebase available globally
+        window.firebaseApp = app;
+        window.firebaseAuth = auth;
+        window.firebaseDb = db;
+    </script>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 0;
+        .gradient-bg {
+            background: linear-gradient(135deg, #2a6aff 0%, #ff8500 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px rgba(42, 106, 255, 0.1);
+        }
+        .tab-active {
             background: linear-gradient(135deg, #2a6aff, #ff8500);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            color: #1a202c;
-            overflow: auto;
+            color: white;
         }
-
-        .container-wrapper {
-            width: 100%;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-            transition: all 0.5s ease-in-out;
-            opacity: 1;
-            transform: scale(1);
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
         }
-
-        .hidden-screen {
-            opacity: 0;
-            transform: scale(0.95);
-            pointer-events: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
-        .card {
-            background-color: white;
-            padding: 2.5rem;
-            border-radius: 1.5rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            width: 100%;
-            max-width: 900px;
-            text-align: center;
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
         }
-
-        .dashboard-container {
-            width: 100%;
-            max-width: 1200px;
-            background-color: white;
-            padding: 2rem;
-            border-radius: 1.5rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            transition: all 0.5s ease-in-out;
-            opacity: 1;
-            transform: scale(1);
-            height: 95vh;
-            overflow-y: auto;
-            position: relative;
-        }
-
-        /* Custom scrollbar */
-        .dashboard-container::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .dashboard-container::-webkit-scrollbar-thumb {
-            background-color: #a0aec0;
-            border-radius: 4px;
-        }
-        .dashboard-container::-webkit-scrollbar-track {
-            background-color: #f7fafc;
-        }
-
-        .login-input {
-            width: 100%;
-            padding: 1rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 0.75rem;
-            transition: border-color 0.3s ease;
-            text-align: center;
-        }
-
-        .login-input:focus {
-            outline: none;
-            border-color: #2a6aff;
-        }
-        
-        .progress-bar {
-            height: 10px;
-            border-radius: 9999px;
-            background-color: #e2e8f0;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            border-radius: 9999px;
-            transition: width 0.5s ease-in-out;
-        }
-
-        .category-card {
-            transition: all 0.3s ease-in-out;
-        }
-
-        .category-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 20px -5px rgba(0, 0, 0, 0.1), 0 6px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-
-        .criteria-content {
-            transition: max-height 0.5s ease-in-out, margin-top 0.5s ease-in-out;
-            overflow: hidden;
-            max-height: 0;
-        }
-
-        .criteria-content.open {
-            margin-top: 1rem;
-        }
-        
-        .arrow-icon {
-            transition: transform 0.3s ease-in-out;
-        }
-        
-        .arrow-icon.open {
-            transform: rotate(180deg);
-        }
-
-        /* Styles for the trends chart container */
-        .chart-container {
-            position: relative;
-            height: 400px; /* Fixed height to prevent infinite stretch */
-            width: 100%;
-        }
-
-        /* Responsive table */
-        .table-container {
-            overflow-x: auto;
-        }
-        .admin-table {
-            width: 100%;
-            min-width: 800px; /* Minimum width for the table */
-            border-collapse: collapse;
-            font-size: 0.875rem;
-        }
-        .admin-table th, .admin-table td {
-            padding: 0.75rem;
-            border-bottom: 1px solid #e2e8f0;
-            text-align: left;
-        }
-        .admin-table th {
-            background-color: #f7fafc;
-            font-weight: 600;
-            color: #4a5568;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        .admin-table td {
-            vertical-align: top;
+        @keyframes slideIn {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(0); }
         }
     </style>
 </head>
-<body>
-
-<!-- Login Screen -->
-<div id="login-screen" class="container-wrapper">
-    <div class="card max-w-md">
-        <img src="https://i.postimg.cc/KzxV7m0Z/CNCI-VIRTUAL-LOGO.jpg" alt="Logo de la Universidad Virtual CNCI" class="mx-auto w-48 mb-6">
-        <h1 id="login-title" class="text-2xl font-bold mb-2">Evaluación Modular – Departamento de Servicios Estudiantiles</h1>
-        <h2 id="login-subtitle" class="text-xl font-semibold mb-6">Módulo M9, Agosto 2025 🗓️</h2>
-        <p id="login-description" class="text-gray-600 mb-6">Consulta tu desempeño del módulo de manera detallada ingresando tu usuario.</p>
-        <div class="flex flex-col items-center gap-4">
-            <input id="user-input" type="text" placeholder="Ingresa tu usuario" class="login-input" autocomplete="off">
-            <button id="login-button" class="w-full bg-[#2a6aff] text-white font-semibold py-3 px-6 rounded-xl transition duration-300 ease-in-out transform hover:scale-105 hover:bg-[#1a55ff] shadow-lg">
-                Consultar mi Evaluación ✨
-            </button>
-            <!-- BOTÓN AÑADIDO -->
-            <button id="clear-data-button" class="mt-2 text-sm text-gray-500 hover:text-red-600 transition-colors duration-200">
-                Restaurar Versión Original / Limpiar Datos
-            </button>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Pantalla de Login -->
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md fade-in">
+            <div class="text-center mb-8">
+                <img src="https://i.postimg.cc/KzxV7m0Z/CNCI-VIRTUAL-LOGO.jpg" alt="Logo Universidad Virtual CNCI" class="mx-auto mb-6 h-20 object-contain">
+                <h1 class="text-2xl font-bold text-gray-800 mb-2">📊 Evaluación Modular</h1>
+                <h2 class="text-lg text-[#2a6aff] font-semibold mb-1">Universidad Virtual CNCI</h2>
+                <p class="text-[#ff8500] font-medium mb-4">Departamento de Servicios Estudiantiles</p>
+                <p class="text-gray-600 text-sm">🔍 Consulta tu desempeño del módulo de manera detallada ingresando tu usuario</p>
+            </div>
+            
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 text-sm font-medium mb-2">👤 Usuario</label>
+                    <input type="text" id="username" required placeholder="Ej: usuario01, admin" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff] focus:border-transparent transition-all">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-medium mb-2">🔒 Contraseña</label>
+                    <input type="password" id="password" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff] focus:border-transparent transition-all">
+                </div>
+                <button type="submit" class="w-full gradient-bg text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-all transform hover:scale-105">
+                    🚀 Consultar mi Evaluación
+                </button>
+            </form>
+            
+            <div id="loginError" class="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg hidden">
+                ❌ Error en el inicio de sesión. Verifica tus credenciales.
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Dashboard Screen -->
-<div id="dashboard-screen" class="container-wrapper hidden-screen">
-    <div class="dashboard-container">
-        <!-- Dashboard Header -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-            <div class="flex-grow">
-                <h1 id="dashboard-title" class="text-3xl font-bold mb-1">Resultados de Evaluación 📊</h1>
-                <p id="user-name" class="text-gray-500 text-lg"></p>
+    <!-- Panel de Administrador -->
+    <div id="adminPanel" class="min-h-screen p-6 hidden">
+        <div class="max-w-7xl mx-auto">
+            <div class="bg-white rounded-2xl shadow-2xl p-8 fade-in">
+                <!-- Header con botones -->
+                <div class="flex justify-between items-center mb-8">
+                    <h1 class="text-3xl font-bold text-gray-800">👨‍💼 Panel de Administrador</h1>
+                    <div class="space-x-4">
+                        <button id="clearTableBtn" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg transition-all">
+                            🗑️ Vaciar Tabla
+                        </button>
+                        <button id="adminLogout" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-all">
+                            🚪 Cerrar Sesión
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sección de Edición General -->
+                <div class="mb-8 bg-gray-50 rounded-xl p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">⚙️ Edición General</h2>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-medium mb-2">Título Principal</label>
+                            <input type="text" id="mainTitle" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]" value="Evaluación Modular – Universidad Virtual CNCI">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-medium mb-2">Subtítulo</label>
+                            <input type="text" id="subtitle" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]" value="Departamento de Servicios Estudiantiles">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-gray-700 text-sm font-medium mb-2">Descripción</label>
+                            <textarea id="description" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]">Consulta tu desempeño del módulo de manera detallada ingresando tu usuario</textarea>
+                        </div>
+                        <div class="md:col-span-2">
+                            <button id="saveLoginTexts" class="bg-[#2a6aff] hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-all">
+                                💾 Guardar Cambios
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla de Usuarios -->
+                <div class="mb-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-gray-800">👥 Tabla de Edición de Usuarios</h2>
+                        <button id="addUserBtn" class="bg-[#ff8500] hover:bg-orange-600 text-white px-6 py-2 rounded-lg transition-all">
+                            ➕ Añadir Usuario
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full bg-white border border-gray-200 rounded-lg">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Usuario</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Nombre</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Puntaje General</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Comentarios</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <!-- Los usuarios se cargarán dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Sección de Categorías -->
+                <div class="mb-8 bg-gray-50 rounded-xl p-6">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-bold text-gray-800">📋 Edición de Categorías y Criterios de Evaluación</h2>
+                        <button id="editCategoriesBtn" class="bg-[#2a6aff] hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-all">
+                            ✏️ Editar Categorías
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Botón de Descarga de Reporte -->
+                <div class="mt-8 text-center">
+                    <button id="downloadReportBtn" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm transition-all">
+                        Generar y Descargar Reporte 📥
+                    </button>
+                </div>
             </div>
-            <button id="logout-button" class="mt-4 md:mt-0 bg-gray-200 text-gray-700 font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-gray-300 transform hover:scale-105">
-                Volver ↩️
-            </button>
         </div>
+    </div>
 
-        <!-- Dashboard Tabs -->
-        <div class="flex justify-between items-center bg-gray-100 p-2 rounded-xl mb-6 flex-wrap">
-            <button class="tab-button w-1/4 py-3 px-2 rounded-xl text-sm md:text-base transition-colors duration-200" data-tab="resumen">Resumen General 📄</button>
-            <button class="tab-button w-1/4 py-3 px-2 rounded-xl text-sm md:text-base transition-colors duration-200" data-tab="tendencias">Tendencias 📈</button>
-            <button class="tab-button w-1/4 py-3 px-2 rounded-xl text-sm md:text-base transition-colors duration-200" data-tab="insignias">Insignias 🎖️</button>
-            <button class="tab-button w-1/4 py-3 px-2 rounded-xl text-sm md:text-base transition-colors duration-200" data-tab="plan">Plan de Trabajo 💡</button>
+    <!-- Modales -->
+    <!-- Modal Añadir/Editar Usuario -->
+    <div id="userModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="userModalTitle" class="text-xl font-bold text-gray-800">➕ Añadir Usuario</h3>
+                <button id="closeUserModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            <form id="userForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 text-sm font-medium mb-2">ID Usuario</label>
+                    <input type="text" id="userId" required placeholder="usuario01, usuario02..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Nombre</label>
+                    <input type="text" id="userNameInput" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Puntaje General</label>
+                    <input type="number" id="userGeneralScore" min="0" max="100" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Comentarios</label>
+                    <textarea id="userComments" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]"></textarea>
+                </div>
+                <div class="flex space-x-4 pt-4">
+                    <button type="submit" class="flex-1 bg-[#2a6aff] hover:bg-blue-600 text-white py-2 rounded-lg transition-all">
+                        💾 Guardar
+                    </button>
+                    <button type="button" id="cancelUserModal" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-lg transition-all">
+                        ❌ Cancelar
+                    </button>
+                </div>
+            </form>
         </div>
+    </div>
 
-        <!-- Tab Content -->
-        <div id="tab-content">
-            <!-- Resumen General Tab -->
-            <div id="resumen-content" class="tab-page">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <!-- Calificación General -->
-                    <div class="bg-gray-100 p-6 rounded-2xl shadow-sm">
-                        <h3 class="text-xl font-semibold mb-4">Calificación General ⭐</h3>
-                        <div class="flex items-center gap-4">
-                            <span id="general-score" class="text-2xl font-bold text-[#2a6aff]">9.2</span>
-                            <div class="progress-bar flex-grow">
-                                <div id="general-progress" class="progress-fill bg-[#2a6aff]" style="width: 92%;"></div>
+    <!-- Modal Detalles de Usuario -->
+    <div id="userDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800">📊 Detalles del Usuario</h3>
+                <button id="closeDetailsModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            <form id="userDetailsForm" class="space-y-6">
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-medium mb-2">ID Usuario</label>
+                        <input type="text" id="detailsUserId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-medium mb-2">Nombre</label>
+                        <input type="text" id="detailsUserName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-medium mb-2">Puntaje General</label>
+                        <input type="number" id="detailsGeneralScore" min="0" max="100" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-medium mb-2">Rol</label>
+                        <select id="detailsUserRole" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]">
+                            <option value="user">Usuario</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Comentarios Generales</label>
+                    <textarea id="detailsGeneralComments" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]"></textarea>
+                </div>
+                <div id="categoriesSection">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-4">📋 Categorías de Evaluación</h4>
+                    <div id="categoriesContainer" class="space-y-4">
+                        <!-- Las categorías se cargarán dinámicamente -->
+                    </div>
+                </div>
+                <div class="flex space-x-4 pt-4">
+                    <button type="submit" class="flex-1 bg-[#2a6aff] hover:bg-blue-600 text-white py-2 rounded-lg transition-all">
+                        💾 Guardar Cambios
+                    </button>
+                    <button type="button" id="cancelDetailsModal" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-lg transition-all">
+                        ❌ Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Confirmación Vaciar Tabla -->
+    <div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
+            <div class="text-center">
+                <div class="text-6xl mb-4">⚠️</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Confirmar Acción</h3>
+                <p class="text-gray-600 mb-6">¿Estás seguro de que deseas eliminar todos los usuarios? Esta acción no se puede deshacer.</p>
+                <div class="flex space-x-4">
+                    <button id="confirmClear" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg transition-all">
+                        🗑️ Sí, Eliminar
+                    </button>
+                    <button id="cancelClear" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-lg transition-all">
+                        ❌ Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar Categorías -->
+    <div id="categoriesModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 max-w-5xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800">📋 Editar Categorías y Criterios</h3>
+                <button id="closeCategoriesModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            <div class="mb-4">
+                <button id="addCategoryBtn" class="bg-[#ff8500] hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition-all">
+                    ➕ Añadir Categoría
+                </button>
+            </div>
+            <div id="categoriesEditContainer" class="space-y-4 mb-6">
+                <!-- Las categorías se cargarán dinámicamente -->
+            </div>
+            <div class="flex space-x-4">
+                <button id="saveCategoriesBtn" class="flex-1 bg-[#2a6aff] hover:bg-blue-600 text-white py-2 rounded-lg transition-all">
+                    💾 Guardar Cambios
+                </button>
+                <button id="cancelCategoriesBtn" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-lg transition-all">
+                    ❌ Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Principal -->
+    <div id="dashboard" class="min-h-screen p-6 hidden">
+        <div class="max-w-6xl mx-auto">
+            <!-- Header -->
+            <div class="bg-white rounded-2xl shadow-2xl p-6 mb-6 fade-in">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-800">📊 Dashboard de Evaluación</h1>
+                        <p class="text-gray-600 mt-1">Bienvenido, <span id="userName" class="text-[#2a6aff] font-semibold"></span></p>
+                    </div>
+                    <button id="backToLogin" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-all">
+                        ← Volver
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="bg-white rounded-2xl shadow-2xl mb-6 fade-in">
+                <div class="flex border-b border-gray-200">
+                    <button class="tab-button tab-active px-6 py-4 font-semibold rounded-tl-2xl transition-all" data-tab="resumen">
+                        📈 Resumen General
+                    </button>
+                    <button class="tab-button px-6 py-4 font-semibold text-gray-600 hover:text-[#2a6aff] transition-all" data-tab="insignias">
+                        🏆 Insignias
+                    </button>
+                    <button class="tab-button px-6 py-4 font-semibold text-gray-600 hover:text-[#2a6aff] rounded-tr-2xl transition-all" data-tab="plan">
+                        📋 Plan de Trabajo
+                    </button>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="p-6">
+                    <!-- Resumen General -->
+                    <div id="resumen" class="tab-content">
+                        <div class="grid md:grid-cols-1 gap-6 mb-8">
+                            <div class="bg-gradient-to-r from-[#2a6aff] to-blue-600 text-white p-6 rounded-xl card-shadow">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="text-lg font-semibold mb-2">🎯 Calificación General</h3>
+                                        <p class="text-3xl font-bold" id="generalScore">--</p>
+                                    </div>
+                                    <div class="text-4xl opacity-80">📊</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-6">📋 Categorías y Criterios de Evaluación</h3>
+                            <div id="evaluationCategories" class="grid gap-6">
+                                <!-- Las categorías se cargarán dinámicamente -->
+                            </div>
+                        </div>
+
+                        <div class="mt-8 bg-gray-50 p-6 rounded-xl">
+                            <h4 class="text-lg font-semibold text-gray-800 mb-3">💬 Comentarios Generales</h4>
+                            <p id="generalComments" class="text-gray-600">Cargando comentarios...</p>
+                        </div>
+                    </div>
+
+                    <!-- Insignias -->
+                    <div id="insignias" class="tab-content hidden">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-6">🏆 Sistema de Insignias</h3>
+                        <div class="grid md:grid-cols-3 gap-6">
+                            <div class="bg-yellow-50 border-2 border-yellow-200 p-6 rounded-xl text-center">
+                                <div class="text-4xl mb-3">🥇</div>
+                                <h4 class="font-semibold text-yellow-800">Excelencia</h4>
+                                <p class="text-sm text-yellow-600 mt-2">Calificación superior a 90</p>
+                            </div>
+                            <div class="bg-blue-50 border-2 border-blue-200 p-6 rounded-xl text-center">
+                                <div class="text-4xl mb-3">📞</div>
+                                <h4 class="font-semibold text-blue-800">Comunicador</h4>
+                                <p class="text-sm text-blue-600 mt-2">Excelente en llamadas</p>
+                            </div>
+                            <div class="bg-green-50 border-2 border-green-200 p-6 rounded-xl text-center">
+                                <div class="text-4xl mb-3">⭐</div>
+                                <h4 class="font-semibold text-green-800">Consistente</h4>
+                                <p class="text-sm text-green-600 mt-2">Desempeño estable</p>
                             </div>
                         </div>
                     </div>
-                    <!-- Meta de Llamadas -->
-                    <div class="bg-gray-100 p-6 rounded-2xl shadow-sm">
-                        <h3 class="text-xl font-semibold mb-4">Meta de Llamadas 📞</h3>
-                        <div class="flex items-center gap-4">
-                            <span id="calls-score" class="text-2xl font-bold text-[#ff8500]">8.5</span>
-                            <div class="progress-bar flex-grow">
-                                <div id="calls-progress" class="progress-fill bg-[#ff8500]" style="width: 85%;"></div>
+
+                    <!-- Plan de Trabajo -->
+                    <div id="plan" class="tab-content hidden">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-6">📋 Plan de Mejora</h3>
+                        <div class="space-y-4">
+                            <div class="bg-blue-50 border-l-4 border-[#2a6aff] p-4 rounded-r-lg">
+                                <h4 class="font-semibold text-[#2a6aff] mb-2">🎯 Objetivos del Próximo Período</h4>
+                                <ul class="text-gray-700 space-y-1">
+                                    <li>• Mejorar seguimiento a población morosa</li>
+                                    <li>• Incrementar reingresos de estudiantes</li>
+                                    <li>• Optimizar procesos académicos</li>
+                                </ul>
+                            </div>
+                            <div class="bg-orange-50 border-l-4 border-[#ff8500] p-4 rounded-r-lg">
+                                <h4 class="font-semibold text-[#ff8500] mb-2">📚 Recursos Recomendados</h4>
+                                <ul class="text-gray-700 space-y-1">
+                                    <li>• Manual de retención estudiantil</li>
+                                    <li>• Curso de comunicación efectiva</li>
+                                    <li>• Taller de uso de CRM</li>
+                                </ul>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Categorías y Criterios de Evaluación -->
-                <div id="categorias-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                    <!-- Cards will be injected here by JavaScript -->
-                </div>
-
-                <!-- Comentarios Generales -->
-                <div class="bg-gray-100 p-6 rounded-2xl shadow-sm mb-6">
-                    <h3 class="text-xl font-semibold mb-4 text-left">Comentarios generales del Supervisor 📝</h3>
-                    <p class="text-gray-700 text-left" id="general-comments"></p>
-                </div>
-                <div class="flex justify-center">
-                    <a id="eval-details-link" href="#" target="_blank" class="bg-[#ff8500] text-white font-semibold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105 hover:bg-[#ff7a00] shadow-lg">
-                        Detalles de Evaluación 🔍
-                    </a>
-                </div>
-            </div>
-
-            <!-- Tendencias Tab -->
-            <div id="tendencias-content" class="tab-page hidden">
-                <div class="bg-gray-100 p-6 rounded-2xl shadow-sm mb-6">
-                    <h2 class="text-2xl font-bold mb-4">Gráfica Anual de Desempeño 🗓️</h2>
-                    <div class="chart-container">
-                        <canvas id="performance-chart"></canvas>
-                    </div>
-                    <div class="flex flex-wrap gap-4 justify-center mt-4" id="chart-buttons-container">
-                        <!-- Category buttons will be injected here -->
-                    </div>
-                </div>
-
-                <!-- Comparativa Mensual -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <div class="bg-gray-100 p-6 rounded-2xl shadow-sm">
-                        <h3 class="text-xl font-semibold mb-2">Hace 2 Meses </h3>
-                        <p class="text-3xl font-bold text-center" id="score-2-months-ago"></p>
-                    </div>
-                    <div class="bg-gray-100 p-6 rounded-2xl shadow-sm">
-                        <h3 class="text-xl font-semibold mb-2">Mes Anterior</h3>
-                        <p class="text-3xl font-bold text-center" id="score-last-month"></p>
-                    </div>
-                    <div class="bg-gray-100 p-6 rounded-2xl shadow-sm">
-                        <h3 class="text-xl font-semibold mb-2">Mes Actual </h3>
-                        <p class="text-3xl font-bold text-center" id="score-this-month"></p>
-                    </div>
-                </div>
-
-                <!-- Métricas Destacadas -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-green-100 p-6 rounded-2xl shadow-sm border border-green-300">
-                        <h3 class="text-xl font-semibold mb-2 flex items-center gap-2">La Mayor Mejora ✅</h3>
-                        <p class="text-gray-700" id="major-improvement-text"></p>
-                    </div>
-                    <div class="bg-red-100 p-6 rounded-2xl shadow-sm border border-red-300">
-                        <h3 class="text-xl font-semibold mb-2 flex items-center gap-2">Área Crítica ⚠️</h3>
-                        <p class="text-gray-700" id="critical-area-text"></p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Insignias Tab -->
-            <div id="insignias-content" class="tab-page hidden">
-                <div class="bg-gray-100 p-6 rounded-2xl shadow-sm mb-6">
-                    <h2 class="text-2xl font-bold mb-4">Tus Insignias 🏆</h2>
-                    <ul id="badges-list" class="space-y-4 text-left">
-                        <!-- Badges will be injected here -->
-                    </ul>
-                </div>
-                <div class="bg-gray-100 p-6 rounded-2xl shadow-sm">
-                    <h2 class="text-2xl font-bold mb-4">Próximas Insignias 🚀</h2>
-                    <ul id="next-badges-list" class="space-y-4 text-left">
-                        <!-- Next badges will be injected here -->
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Plan de Trabajo Tab -->
-            <div id="plan-content" class="tab-page hidden">
-                <div class="bg-gray-100 p-6 rounded-2xl shadow-sm mb-6">
-                    <h2 class="text-2xl font-bold mb-4">Plan de Mejora 🎯</h2>
-                    <p class="text-gray-700 text-left" id="plan-instructions"></p>
-                </div>
-                <a id="plan-link" href="#" target="_blank" class="w-full md:w-auto bg-[#2a6aff] text-white font-semibold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105 hover:bg-[#1a55ff] shadow-lg inline-block">
-                    Crear mi Plan de Trabajo 📝
-                </a>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Admin Panel Screen -->
-<div id="admin-screen" class="container-wrapper hidden-screen">
-    <div class="dashboard-container">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-3xl font-bold flex items-center gap-2">
-                Panel de Administrador ⚙️
-            </h1>
-            <div class="flex items-center gap-2">
-                <button id="add-user-btn" class="bg-green-500 text-white font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-green-600">
-                    Añadir Usuario
-                </button>
-                <button id="admin-logout-button" class="bg-gray-200 text-gray-700 font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-gray-300 transform hover:scale-105">
-                    Volver al login ↩️
-                </button>
-                <button id="empty-table-btn" class="bg-red-500 text-white font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-red-600">
-                    Vaciar tabla 🗑️
-                </button>
-            </div>
-        </div>
-        
-        <!-- Sección de Edición General -->
-        <div class="bg-gray-100 p-6 rounded-2xl shadow-sm mb-6">
-            <h2 class="text-xl font-bold mb-4 flex items-center gap-2">Edición General 📄</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-gray-700 font-semibold mb-1">Título de Login</label>
-                    <input type="text" id="admin-login-title" class="w-full p-2 rounded-lg border border-gray-300" placeholder="Título de la pantalla de login">
-                </div>
-                <div>
-                    <label class="block text-gray-700 font-semibold mb-1">Subtítulo de Login</label>
-                    <input type="text" id="admin-login-subtitle" class="w-full p-2 rounded-lg border border-gray-300" placeholder="Subtítulo de la pantalla de login">
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-gray-700 font-semibold mb-1">Descripción de Login</label>
-                    <textarea id="admin-login-description" class="w-full p-2 rounded-lg border border-gray-300" rows="3" placeholder="Descripción de la pantalla de login"></textarea>
-                </div>
-            </div>
-            <button id="save-general-settings-btn" class="mt-4 bg-[#2a6aff] text-white font-semibold py-2 px-4 rounded-lg transition duration-300 hover:bg-[#1a55ff]">
-                Guardar Cambios
-            </button>
-        </div>
+    <script>
+        // Variables globales
+        let currentUser = null;
+        let evaluationTemplate = null;
+        let allUsers = [];
+        let currentEditingUser = null;
+        let categoriesData = [];
 
-        <!-- Tabla de Edición de Usuarios -->
-        <div class="bg-gray-100 p-6 rounded-2xl shadow-sm mb-6">
-            <h2 class="text-xl font-bold mb-4 flex items-center gap-2">Tabla de Edición de Usuarios 👥</h2>
-            <div class="table-container">
-                <table id="users-table" class="admin-table">
-                    <thead>
-                        <tr>
-                            <th class="w-1/12">Usuario</th>
-                            <th class="w-2/12">Nombre</th>
-                            <th class="w-1/12">Puntaje General</th>
-                            <th class="w-1/12">Meta de Llamadas</th>
-                            <th class="w-4/12">Comentarios</th>
-                            <th class="w-2/12">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- User rows will be injected here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Sección de Edición de Categorías y Criterios -->
-        <div class="bg-gray-100 p-6 rounded-2xl shadow-sm mb-6">
-            <h2 class="text-xl font-bold mb-4">Edición de Categorías y Criterios de Evaluación 📝</h2>
-            <p class="text-gray-700 mb-4">Los cambios realizados aquí se aplicarán a la plantilla de todos los usuarios.</p>
-            <button id="edit-categories-btn" class="bg-[#ff8500] text-white font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-[#ff7a00]">
-                Editar Categorías y Criterios
-            </button>
-        </div>
-        
-        <!-- Sección de Edición de Tendencias -->
-        <div class="bg-gray-100 p-6 rounded-2xl shadow-sm mb-6">
-            <h2 class="text-xl font-bold mb-4">Edición de Tendencias 📈</h2>
-            <p class="text-gray-700 mb-4">Añade, edita o elimina las categorías del gráfico de líneas.</p>
-            <button id="edit-trends-btn" class="bg-[#4ade80] text-white font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-[#34d399]">
-                Editar Categorías de Tendencias
-            </button>
-        </div>
-        
-        <!-- Botón de Descarga -->
-        <div class="flex justify-center mt-8 mb-4">
-             <button id="admin-download-report-btn" class="bg-gray-600 text-white font-semibold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105 hover:bg-gray-700 shadow-lg">
-                Generar y Descargar Reporte 📥
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Container -->
-<div id="modal-container" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white p-8 rounded-xl shadow-lg text-center max-w-sm w-full">
-        <h3 id="modal-title" class="text-xl font-bold mb-4"></h3>
-        <p id="modal-message" class="text-gray-700 mb-6"></p>
-        <button id="modal-ok-button" class="bg-[#2a6aff] text-white font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-[#1a55ff]">
-            Aceptar
-        </button>
-    </div>
-</div>
-
-<!-- Modal para añadir/editar usuario -->
-<div id="user-modal-container" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white p-8 rounded-xl shadow-lg max-w-md w-full">
-        <h3 id="user-modal-title" class="text-2xl font-bold mb-4 text-center">Añadir Nuevo Usuario</h3>
-        <form id="user-form" class="space-y-4">
-            <div>
-                <label for="form-id" class="block text-sm font-medium text-gray-700">Usuario ID</label>
-                <input type="text" id="form-id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" required>
-            </div>
-            <div>
-                <label for="form-name" class="block text-sm font-medium text-gray-700">Nombre</label>
-                <input type="text" id="form-name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" required>
-            </div>
-            <div>
-                <label for="form-role" class="block text-sm font-medium text-gray-700">Rol</label>
-                <select id="form-role" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
-                    <option value="user">Usuario</option>
-                    <option value="admin">Administrador</option>
-                </select>
-            </div>
-            <div>
-                <label for="form-general-score" class="block text-sm font-medium text-gray-700">Puntaje General</label>
-                <input type="number" step="0.1" min="0" max="10" id="form-general-score" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
-            </div>
-            <div>
-                <label for="form-calls-score" class="block text-sm font-medium text-gray-700">Meta de Llamadas</label>
-                <input type="number" step="0.1" min="0" max="10" id="form-calls-score" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
-            </div>
-            <div>
-                <label for="form-comments" class="block text-sm font-medium text-gray-700">Comentarios</label>
-                <textarea id="form-comments" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"></textarea>
-            </div>
-            <div class="flex justify-end gap-4 mt-6">
-                <button type="button" id="user-modal-cancel" class="bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-gray-400">Cancelar</button>
-                <button type="submit" id="user-modal-save" class="bg-[#2a6aff] text-white font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-[#1a55ff]">Guardar</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Modal de detalles de usuario -->
-<div id="details-modal-container" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white p-8 rounded-xl shadow-lg max-w-2xl w-full h-[90vh] overflow-y-auto">
-        <div class="flex justify-between items-center mb-4">
-            <h3 id="details-modal-title" class="text-2xl font-bold">Detalles de Usuario</h3>
-            <button type="button" id="details-modal-cancel-top" class="bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-gray-400">Cancelar</button>
-        </div>
-        <form id="details-form" class="space-y-6">
-            <!-- Sección de Títulos y Enlaces -->
-            <div class="bg-gray-100 p-4 rounded-xl">
-                <h4 class="text-lg font-semibold mb-2">Títulos y Enlaces del Dashboard</h4>
-                <div class="space-y-2">
-                    <label class="block">
-                        <span class="text-sm">Título del Dashboard:</span>
-                        <input type="text" id="details-dashboard-title" class="w-full mt-1 p-2 rounded-lg border">
-                    </label>
-                    <label class="block">
-                        <span class="text-sm">Enlace 'Detalles de Evaluación':</span>
-                        <input type="url" id="details-eval-link" class="w-full mt-1 p-2 rounded-lg border">
-                    </label>
-                    <label class="block">
-                        <span class="text-sm">Enlace 'Plan de Trabajo':</span>
-                        <input type="url" id="details-plan-link" class="w-full mt-1 p-2 rounded-lg border">
-                    </label>
-                </div>
-            </div>
-            
-            <!-- Sección de Comentarios y Métricas -->
-            <div class="bg-gray-100 p-4 rounded-xl">
-                <h4 class="text-lg font-semibold mb-2">Comentarios y Métricas</h4>
-                <label class="block">
-                    <span class="text-sm">Comentarios Generales del Supervisor:</span>
-                    <textarea id="details-general-comments" rows="3" class="w-full mt-1 p-2 rounded-lg border"></textarea>
-                </label>
-                <label class="block">
-                    <span class="text-sm">Mayor Mejora:</span>
-                    <textarea id="details-improvement" rows="2" class="w-full mt-1 p-2 rounded-lg border"></textarea>
-                </label>
-                <label class="block">
-                    <span class="text-sm">Área Crítica:</span>
-                    <textarea id="details-critical-area" rows="2" class="w-full mt-1 p-2 rounded-lg border"></textarea>
-                </label>
-                <label class="block">
-                    <span class="text-sm">Instrucciones del Plan de Trabajo:</span>
-                    <textarea id="details-plan-instructions" rows="2" class="w-full mt-1 p-2 rounded-lg border"></textarea>
-                </label>
-            </div>
-
-            <!-- Sección de Tendencias (Datos de la Gráfica) -->
-            <div class="bg-gray-100 p-4 rounded-xl">
-                <h4 class="text-lg font-semibold mb-2">Datos de Tendencias (Gráfica)</h4>
-                <div id="trends-form-container" class="space-y-4">
-                    <!-- Dynamic trend inputs will be injected here -->
-                </div>
-            </div>
-
-            <!-- Sección de Categorías y Criterios -->
-            <div id="criteria-form-container" class="space-y-4">
-                <!-- Dynamic category/criteria inputs will be injected here -->
-            </div>
-
-            <div class="flex justify-between gap-4 mt-6">
-                <button type="button" id="details-modal-cancel" class="bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-gray-400">Cancelar</button>
-                <button type="submit" id="details-modal-save" class="bg-[#2a6aff] text-white font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-[#1a55ff]">Guardar Cambios</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Modal de Confirmación para Vaciar Tabla -->
-<div id="confirm-modal-container" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white p-8 rounded-xl shadow-lg text-center max-w-sm w-full">
-        <h3 class="text-xl font-bold mb-4 text-red-600">⚠️ Confirmar Eliminación</h3>
-        <p class="text-gray-700 mb-6">¿Estás seguro de que deseas eliminar TODOS los datos de la tabla? Esta acción no se puede deshacer.</p>
-        <div class="flex justify-center gap-4">
-            <button id="confirm-empty-btn" class="bg-red-500 text-white font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-red-600">Sí, estoy seguro</button>
-            <button id="cancel-empty-btn" class="bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-gray-400">Cancelar</button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal de Edición de Categorías/Criterios -->
-<div id="categories-modal-container" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white p-8 rounded-xl shadow-lg max-w-md w-full h-[90vh] overflow-y-auto">
-        <h3 class="text-2xl font-bold mb-4 text-center">Edición de Categorías</h3>
-        <form id="categories-form" class="space-y-4">
-            <div id="categories-list-container" class="space-y-4">
-                <!-- Categories will be injected here -->
-            </div>
-            <button type="button" id="add-category-btn" class="w-full bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg transition duration-300 hover:bg-gray-300">
-                Añadir Nueva Categoría
-            </button>
-            <div class="flex justify-end gap-4 mt-6">
-                <button type="button" id="categories-modal-cancel" class="bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-gray-400">Cancelar</button>
-                <button type="submit" id="categories-modal-save" class="bg-[#2a6aff] text-white font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-[#1a55ff]">Guardar</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Modal de Edición de Tendencias -->
-<div id="trends-modal-container" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white p-8 rounded-xl shadow-lg max-w-md w-full h-[90vh] overflow-y-auto">
-        <h3 class="text-2xl font-bold mb-4 text-center">Edición de Tendencias</h3>
-        <form id="trends-form" class="space-y-4">
-            <div id="trends-list-container" class="space-y-4">
-                <!-- Trends will be injected here -->
-            </div>
-            <button type="button" id="add-trend-btn" class="w-full bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg transition duration-300 hover:bg-gray-300">
-                Añadir Nueva Tendencia
-            </button>
-            <div class="flex justify-end gap-4 mt-6">
-                <button type="button" id="trends-modal-cancel" class="bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-gray-400">Cancelar</button>
-                <button type="submit" id="trends-modal-save" class="bg-[#2a6aff] text-white font-semibold py-2 px-6 rounded-full transition duration-300 hover:bg-[#1a55ff]">Guardar</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<script>
-    // Se simula una base de datos local
-    let database = {
-        users: {
-            'usuario01': {
-                id: 'usuario01',
-                name: 'Ana Sofía Gutiérrez',
-                role: 'user',
-                generalScore: 9.2,
-                callsScore: 8.5,
-                generalComments: 'Pedro, has demostrado un excelente desempeño este mes. Tu atención a los alumnos es destacable y sigues los procesos de manera consistente. Debes mejorar en los tiempos de respuesta para alcanzar los objetivos del equipo.',
-                dashboardTitle: 'Resultados de Evaluación 📊',
-                evalDetailsLink: 'https://example.com/detalles/usuario01',
-                planLink: 'https://example.com/plan-de-trabajo/usuario01',
-                improvement: 'Incremento del 5% en la tasa de reincorporación, superando la meta del equipo.',
-                criticalArea: 'Mantener la agilidad en respuestas de WhatsApp durante picos de alta demanda.',
-                planInstructions: 'Instrucciones para el Plan de Trabajo. A partir de los resultados de tu evaluación, identifica de 3 a 4 áreas de oportunidad y describe acciones concretas que puedas implementar para mejorarlas. Indica el plazo estimado y cómo darás seguimiento a cada acción. Sé específico y realista para facilitar el cumplimiento y la evaluación de avances. Ingresa al siguiente enlace, redacta y establece tu plan de trabajo antes del 11 de septiembre de 2025.',
-                monthlyScores: {
-                    'Hace 2 Meses': '8.5 📉',
-                    'Mes Anterior': '9.1 📈',
-                    'Mes Actual': '9.2 📈'
-                }
-            },
+        // Datos de demostración con nueva estructura de evaluación
+        const demoUsers = {
             'admin': {
-                id: 'admin',
-                name: 'Administrador',
+                password: 'admin123',
                 role: 'admin',
-                generalScore: 0,
-                callsScore: 0,
-                generalComments: '',
-                dashboardTitle: 'Panel de Administrador ⚙️'
-            }
-        },
-        evaluationData: [
-            {
-                category: 'RETENCIÓN',
-                emoji: '🤝',
-                colors: ['#2a6aff', '#4f8bff'],
-                comments: {
-                    supervision: 'Se cumplió la meta del mes. Se ha visto un aumento en el porcentaje de retención.',
-                    quality: 'La calidad del seguimiento a la población morosa es alta y se ha reflejado en los resultados.'
-                },
-                criteria: [
-                    { name: 'Seguimiento a población morosa', score: 9.0 },
-                    { name: 'Total de bajas de alumnos con morosidad', score: 8.5 },
-                    { name: 'Uso adecuado y oportuno de la columna de retención de CRM...', score: 10.0 },
-                    { name: 'Retención y bajas pagadas', score: 9.0 }
-                ]
+                name: 'Administrador CNCI',
+                username: 'admin'
             },
-            {
-                category: 'REINCORPORACIÓN',
-                emoji: '🔄',
-                colors: ['#ff8500', '#ffb050'],
-                comments: {
-                    supervision: 'Se superó la meta de reingresos. Se recomienda mantener el enfoque en la búsqueda y difusión de promociones.',
-                    quality: 'Los registros y seguimientos se realizan de manera detallada y completa.'
-                },
-                criteria: [
-                    { name: 'Bajas por no pago', score: 10.0 },
-                    { name: 'Búsqueda y difusión de promociones', score: 9.0 },
-                    { name: 'Registro y seguimiento', score: 10.0 },
-                    { name: 'Cierre de prospectos', score: 8.0 },
-                    { name: 'Total de reingresos', score: 9.5 }
-                ]
-            },
-            {
-                category: 'PROCESOS',
-                emoji: '⚙️',
-                colors: ['#4ade80', '#86efac'],
-                comments: {
-                    supervision: 'Excelente manejo de los procesos académicos y atención al detalle en la búsqueda de alumnos.',
-                    quality: 'Se nota la consistencia en los procesos, lo que facilita el trabajo de otros departamentos.'
-                },
-                criteria: [
-                    { name: 'Búsqueda de alumnos por estatus y perfil: semana 1 a la semana 4', score: 10.0 },
-                    { name: 'Procesos académicos: Cambio de carrera y/o programa, Cambio de modelo educativo...', score: 10.0 }
-                ]
-            },
-            {
-                category: 'WHATSAPP',
-                emoji: '📱',
-                colors: ['#8b5cf6', '#a78bfa'],
-                comments: {
-                    supervision: 'Buen desempeño en la respuesta de mensajes, aunque se debe mejorar en la agilidad en horarios pico.',
-                    quality: 'El mensaje es claro y la redacción es impecable, se mantiene la comunicación formal.'
-                },
-                criteria: [
-                    { name: 'Se mantiene en línea durante todo el horario laboral. ', score: 9.0 },
-                    { name: 'Se responde a todos los mensajes entrantes.', score: 8.0 },
-                    { name: 'Se da seguimiento oportuno a los casos que se atienden por WhatsApp.', score: 8.5 },
-                    { name: 'La redacción es impecable y sin errores ortográficos.', score: 10.0 },
-                ]
-            },
-            {
-                category: 'COMUNICACIÓN INTERNA',
-                emoji: '💬',
-                colors: ['#f97316', '#fb923c'],
-                comments: {
-                    supervision: 'Comunicación efectiva con los diferentes departamentos. Se recomienda ser más proactivo en la colaboración.',
-                    quality: 'El trabajo en equipo es destacable, se nota la sinergia en los casos complejos.'
-                },
-                criteria: [
-                    { name: 'Trabajo en equipo', score: 9.0 },
-                    { name: 'Interacción con el equipo', score: 8.0 },
-                    { name: 'Comunicación asertiva con el supervisor', score: 10.0 },
-                    { name: 'Colaboración en general', score: 9.5 }
-                ]
-            }
-        ],
-        trendsData: {
-            'RETENCIÓN': [8.5, 8.6, 8.8, 8.7, 8.9, 9.0, 9.1, 9.0, 9.2, 9.3, 9.4, 9.5],
-            'REINCORPORACIÓN': [7.0, 7.5, 8.0, 8.5, 8.8, 9.0, 9.2, 9.1, 9.3, 9.4, 9.6, 9.8],
-            'PROCESOS': [9.0, 9.1, 9.2, 9.3, 9.5, 9.6, 9.5, 9.7, 9.8, 9.9, 10.0, 10.0],
-            'WHATSAPP': [7.5, 8.0, 8.2, 8.5, 8.7, 8.8, 8.9, 9.0, 9.2, 9.1, 9.3, 9.5],
-            'COMUNICACIÓN INTERNA': [8.0, 8.2, 8.5, 8.7, 8.8, 9.0, 9.1, 9.2, 9.3, 9.4, 9.5, 9.6]
-        },
-        trendsColors: {
-            'RETENCIÓN': '#2a6aff',
-            'REINCORPORACIÓN': '#ff8500',
-            'PROCESOS': '#4ade80',
-            'WHATSAPP': '#8b5cf6',
-            'COMUNICACIÓN INTERNA': '#f97316'
-        },
-        loginTexts: {
-            title: 'Evaluación Modular – Departamento de Servicios Estudiantiles',
-            subtitle: 'Módulo M8, Agosto 2025 🗓️',
-            description: 'Consulta tu desempeño del módulo de manera detallada ingresando tu usuario Vici.'
-        },
-        badges: [
-            { icon: '🏆', title: 'Maestro(a) de Procesos', description: 'Representa la excelencia en el seguimiento de todos los procesos administrativos y académicos.' },
-            { icon: '🏅', title: 'Campeón(a) de Retención', description: 'Reconoce un alto porcentaje de alumnos retenidos, evitando bajas por morosidad.' },
-            { icon: '🎖️', title: 'Experto(a) en WhatsApp', description: 'Premia la habilidad para gestionar eficientemente las conversaciones y consultas a través de WhatsApp.' },
-            { icon: '🌟', title: 'Estrella del Módulo', description: 'Otorga el reconocimiento por un desempeño integral y sobresaliente durante el módulo.' }
-        ],
-        nextBadges: [
-            { icon: '⭐', title: 'Fortaleza', description: 'Mantener consistencia en procesos de reincorporación.', meta: 'Alcanzar el 95% de reincorporación.' },
-            { icon: '⭐', title: 'Fortaleza', description: 'Mejorar el tiempo de respuesta en llamadas.', meta: 'Reducir el tiempo promedio a 1 minuto y 30 segundos.' }
-        ]
-    };
-
-    // Agregar usuarios de ejemplo para la tabla
-    for (let i = 1; i <= 18; i++) {
-        const userId = `usuario${String(i).padStart(2, '0')}`;
-        const name = `Usuario ${String(i).padStart(2, '0')}`;
-        if (!database.users[userId]) {
-            database.users[userId] = {
-                id: userId,
-                name: name,
+            'usuario01': {
+                password: 'password123',
                 role: 'user',
-                generalScore: (Math.random() * 3 + 7).toFixed(1), // Random score between 7 and 10
-                callsScore: (Math.random() * 3 + 7).toFixed(1), // Random score between 7 and 10
-                generalComments: `Comentarios generales para el ${name}.`,
-                dashboardTitle: 'Resultados de Evaluación 📊',
-                evalDetailsLink: `https://example.com/detalles/${userId}`,
-                planLink: `https://example.com/plan-de-trabajo/${userId}`,
-                improvement: `La mayor mejora para ${name} es...`,
-                criticalArea: `El área crítica para ${name} es...`,
-                planInstructions: `Instrucciones del plan de mejora para ${name}.`,
-                monthlyScores: {
-                    'Hace 2 Meses': `${(Math.random() * 3 + 7).toFixed(1)} ${Math.random() > 0.5 ? '📈' : '📉'}`,
-                    'Mes Anterior': `${(Math.random() * 3 + 7).toFixed(1)} ${Math.random() > 0.5 ? '📈' : '📉'}`,
-                    'Mes Actual': `${(Math.random() * 3 + 7).toFixed(1)} ${Math.random() > 0.5 ? '📈' : '📉'}`
+                id: 'usuario01',
+                name: 'María González Pérez',
+                username: 'usuario01',
+                generalScore: 87,
+                generalComments: 'Excelente desempeño en retención y reincorporación. Se destaca por su seguimiento oportuno a estudiantes morosos y uso efectivo del CRM. Áreas de oportunidad: mejorar tiempo de respuesta en WhatsApp.',
+                categories: {
+                    'RETENCIÓN': { 
+                        score: 90, 
+                        criteria: ['Seguimiento a población morosa', 'Total de bajas de alumnos con morosidad', 'Uso adecuado y oportuno de la columna de retención de CRM', 'Retención y bajas pagadas'] 
+                    },
+                    'REINCORPORACIÓN': { 
+                        score: 85, 
+                        criteria: ['Bajas por no pago', 'Búsqueda y difusión de promociones', 'Registro y seguimiento', 'Cierre de prospectos', 'Total de reingresos'] 
+                    },
+                    'PROCESOS': { 
+                        score: 88, 
+                        criteria: ['Búsqueda de alumnos por estatus y perfil: semana 1 a la semana 4', 'Procesos académicos', 'Trámites escolares'] 
+                    },
+                    'LLAMADA': { 
+                        score: 92, 
+                        criteria: ['Se presenta con su nombre e identificación de la Universidad', 'Maneja motivo de la llamada de manera adecuada'] 
+                    },
+                    'WHATSAPP': { 
+                        score: 83, 
+                        criteria: ['Emplea redacción adecuada', 'Crea bocetos', 'Responde todos los mensajes', 'Contesta preguntas en un rango de 12 horas o menos', 'Brinda soluciones pertinentes', 'Propone llamada para una mejor explicación', 'Es empático (a)'] 
+                    },
+                    'CORREO ELECTRÓNICO': { 
+                        score: 89, 
+                        criteria: ['Emplea redacción adecuada', 'Crea bocetos previos a enviar', 'Responde todos los mensajes', 'Contesta preguntas en un rango de 12 horas o menos', 'Atiende en tiempo la asignación de correos institucionales', 'Brinda soluciones pertinentes', 'Propone llamada para una mejor explicación', 'Es empático (a)', 'Mantiene control sobre sus emociones en casos difíciles'] 
+                    },
+                    'VIVA ENGAGE': { 
+                        score: 86, 
+                        criteria: ['La reunión previa a la publicación se realiza de forma exitosa', 'Se nota una excelente organización y trabajo en equipo', 'Se utilizan imágenes, videos o elementos gráficos llamativos y bien diseñados', 'Se publica en la fecha establecida sin retrasos'] 
+                    },
+                    'ACTIVIDADES ADMINISTRATIVAS': { 
+                        score: 91, 
+                        criteria: ['Asigna y actualiza perfiles', 'Especifica a través de que medio abordó al alumno', 'Registra en tiempo (diario) sus actividades en el reporte de seguimiento CRM', 'Organiza sus tiempos para cumplir con el % mínimo (90%) de contactación', 'Logra el % mínimo de contactación'] 
+                    }
                 }
-            };
-        }
-    }
-
-    // Funciones de persistencia en localStorage
-    function saveDatabase() {
-        localStorage.setItem('evaluationDatabase', JSON.stringify(database));
-    }
-
-    function loadDatabase() {
-        const savedData = localStorage.getItem('evaluationDatabase');
-        if (savedData) {
-            database = JSON.parse(savedData);
-        }
-    }
-
-    // Cargar la base de datos al inicio
-    loadDatabase();
-
-    let currentUser = null;
-    let chartInstance = null;
-    let editingRow = null;
-
-    // Elementos de la UI
-    const loginScreen = document.getElementById('login-screen');
-    const dashboardScreen = document.getElementById('dashboard-screen');
-    const adminScreen = document.getElementById('admin-screen');
-    const userInput = document.getElementById('user-input');
-    const loginButton = document.getElementById('login-button');
-    const logoutButton = document.getElementById('logout-button');
-    const adminLogoutButton = document.getElementById('admin-logout-button');
-    const userNameElement = document.getElementById('user-name');
-    const tabs = document.querySelectorAll('.tab-button');
-    const categoriasContainer = document.getElementById('categorias-container');
-    const usersTableBody = document.querySelector('#users-table tbody');
-
-    // Modals
-    const modalContainer = document.getElementById('modal-container');
-    const modalTitle = document.getElementById('modal-title');
-    const modalMessage = document.getElementById('modal-message');
-    const modalOkButton = document.getElementById('modal-ok-button');
-    const userModalContainer = document.getElementById('user-modal-container');
-    const userModalTitle = document.getElementById('user-modal-title');
-    const userForm = document.getElementById('user-form');
-    const addUserBtn = document.getElementById('add-user-btn');
-    const userModalCancelBtn = document.getElementById('user-modal-cancel');
-    const detailsModalContainer = document.getElementById('details-modal-container');
-    const detailsForm = document.getElementById('details-form');
-    const detailsModalCancelTopBtn = document.getElementById('details-modal-cancel-top');
-    const detailsModalCancelBtn = document.getElementById('details-modal-cancel');
-    const confirmModalContainer = document.getElementById('confirm-modal-container');
-    const emptyTableBtn = document.getElementById('empty-table-btn');
-    const confirmEmptyBtn = document.getElementById('confirm-empty-btn');
-    const cancelEmptyBtn = document.getElementById('cancel-empty-btn');
-    const categoriesModalContainer = document.getElementById('categories-modal-container');
-    const editCategoriesBtn = document.getElementById('edit-categories-btn');
-    const categoriesForm = document.getElementById('categories-form');
-    const addCategoryBtn = document.getElementById('add-category-btn');
-    const categoriesModalCancelBtn = document.getElementById('categories-modal-cancel');
-    const categoriesListContainer = document.getElementById('categories-list-container');
-    const trendsModalContainer = document.getElementById('trends-modal-container');
-    const editTrendsBtn = document.getElementById('edit-trends-btn');
-    const trendsForm = document.getElementById('trends-form');
-    const addTrendBtn = document.getElementById('add-trend-btn');
-    const trendsModalCancelBtn = document.getElementById('trends-modal-cancel');
-    const trendsListContainer = document.getElementById('trends-list-container');
-    
-// ######################################################################
-// ##              INICIO DE LA SECCIÓN CORREGIDA Y MEJORADA             ##
-// ######################################################################
-
-// Botón para generar y descargar el reporte
-const adminDownloadReportBtn = document.getElementById('admin-download-report-btn');
-
-adminDownloadReportBtn.addEventListener('click', () => {
-    // --- 1. PREPARACIÓN ---
-    const reportDocument = document.documentElement.cloneNode(true);
-
-    // --- 2. INCRUSTAR DATOS ACTUALIZADOS ---
-    const updatedDatabaseString = `let database = ${JSON.stringify(database, null, 4)};`;
-    const scriptTagInClone = reportDocument.querySelector('script');
-
-    if (scriptTagInClone) {
-        let scriptContent = scriptTagInClone.innerHTML;
-        
-        // **LA MEJORA CLAVE ESTÁ AQUÍ**
-        // Antes de reescribir el script, desactivamos la carga desde localStorage en el reporte.
-        scriptContent = scriptContent.replace("loadDatabase();", "// loadDatabase(); // Desactivado en el reporte para asegurar que se muestren los datos incrustados.");
-
-        const databaseEndIndex = scriptContent.indexOf('// Funciones de persistencia en localStorage');
-        const logicAfterDatabase = scriptContent.substring(databaseEndIndex);
-        
-        scriptTagInClone.innerHTML = updatedDatabaseString + '\n\n' + logicAfterDatabase;
-    }
-
-    // --- 3. HACER EL ARCHIVO AUTOCONTENIDO (INCRUSTAR CSS) ---
-    const headInClone = reportDocument.querySelector('head');
-    const styleTag = document.createElement('style');
-    let allCssRules = '';
-    Array.from(document.styleSheets).forEach(sheet => {
-        try {
-            allCssRules += Array.from(sheet.cssRules).map(rule => rule.cssText).join('\n');
-        } catch (e) {
-            console.warn("No se pudo leer una hoja de estilos (CORS):", e);
-        }
-    });
-    styleTag.textContent = allCssRules;
-    headInClone.appendChild(styleTag);
-    reportDocument.querySelectorAll('link[rel="stylesheet"]').forEach(link => link.remove());
-
-    // --- 4. PREPARAR ESTADO INICIAL DE LA PÁGINA ---
-    const loginScreenClone = reportDocument.querySelector('#login-screen');
-    const dashboardScreenClone = reportDocument.querySelector('#dashboard-screen');
-    const adminScreenClone = reportDocument.querySelector('#admin-screen');
-
-    if (loginScreenClone) {
-        loginScreenClone.classList.remove('hidden-screen');
-        loginScreenClone.style.display = 'flex';
-    }
-    if (dashboardScreenClone) {
-        dashboardScreenClone.classList.add('hidden-screen');
-        dashboardScreenClone.style.display = 'none';
-    }
-    if (adminScreenClone) {
-        adminScreenClone.classList.add('hidden-screen');
-        adminScreenClone.style.display = 'none';
-    }
-    
-    // --- 5. GENERAR Y DESCARGAR EL ARCHIVO ---
-    const htmlContent = reportDocument.outerHTML;
-    const date = new Date();
-    const monthNames = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
-    const month = monthNames[date.getMonth()];
-    const year = date.getFullYear();
-    const fileName = `reporte_evaluacion_${month}_${year}.html`;
-
-    const blob = new Blob([htmlContent], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    showModal('Éxito', `El reporte "${fileName}" ha sido generado y descargado.`);
-});
-
-// ######################################################################
-// ##                    FIN DE LA SECCIÓN CORREGIDA                   ##
-// ######################################################################
-
-    // Función para mostrar el modal de alerta
-    function showModal(title, message) {
-        modalTitle.textContent = title;
-        modalMessage.textContent = message;
-        modalContainer.classList.remove('hidden');
-    }
-
-    modalOkButton.addEventListener('click', () => {
-        modalContainer.classList.add('hidden');
-    });
-
-    function switchScreen(fromScreen, toScreen) {
-        fromScreen.classList.add('hidden-screen');
-        setTimeout(() => {
-            fromScreen.style.display = 'none';
-            toScreen.style.display = 'flex';
-            setTimeout(() => {
-                toScreen.classList.remove('hidden-screen');
-            }, 10);
-        }, 500);
-    }
-
-    function handleLogin() {
-        const username = userInput.value.trim().toLowerCase();
-        currentUser = database.users[username];
-
-        if (currentUser) {
-            if (currentUser.role === 'admin') {
-                renderAdminPanel();
-                switchScreen(loginScreen, adminScreen);
-            } else {
-                renderDashboard(currentUser.id);
-                switchScreen(loginScreen, dashboardScreen);
-            }
-        } else {
-            showModal('Error de Acceso', 'Usuario no encontrado. Por favor, verifica tu nombre de usuario.');
-        }
-    }
-
-    loginButton.addEventListener('click', handleLogin);
-    userInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            handleLogin();
-        }
-    });
-
-    logoutButton.addEventListener('click', () => {
-        switchScreen(dashboardScreen, loginScreen);
-        resetUI();
-    });
-
-    adminLogoutButton.addEventListener('click', () => {
-        switchScreen(adminScreen, loginScreen);
-        resetUI();
-    });
-
-    function resetUI() {
-        userInput.value = '';
-        document.getElementById('login-title').textContent = database.loginTexts.title;
-        document.getElementById('login-subtitle').textContent = database.loginTexts.subtitle;
-        document.getElementById('login-description').textContent = database.loginTexts.description;
-    }
-
-    function renderDashboard(userId) {
-        const user = database.users[userId];
-        userNameElement.textContent = user.name;
-        document.getElementById('general-score').textContent = user.generalScore;
-        document.getElementById('general-progress').style.width = `${user.generalScore * 10}%`;
-        document.getElementById('calls-score').textContent = user.callsScore;
-        document.getElementById('calls-progress').style.width = `${user.callsScore * 10}%`;
-        document.getElementById('general-comments').textContent = user.generalComments;
-        document.getElementById('eval-details-link').href = user.evalDetailsLink;
-        document.getElementById('plan-link').href = user.planLink;
-        document.getElementById('dashboard-title').textContent = user.dashboardTitle;
-        document.getElementById('score-2-months-ago').innerHTML = user.monthlyScores['Hace 2 Meses'];
-        document.getElementById('score-last-month').innerHTML = user.monthlyScores['Mes Anterior'];
-        document.getElementById('score-this-month').innerHTML = user.monthlyScores['Mes Actual'];
-        document.getElementById('major-improvement-text').textContent = user.improvement;
-        document.getElementById('critical-area-text').textContent = user.criticalArea;
-        document.getElementById('plan-instructions').textContent = user.planInstructions;
-
-        renderCategories();
-        renderBadges();
-
-        document.querySelector('[data-tab="resumen"]').click();
-    }
-
-    function renderCategories() {
-        categoriasContainer.innerHTML = '';
-        database.evaluationData.forEach(cat => {
-            const totalScore = cat.criteria.reduce((sum, c) => sum + c.score, 0);
-            const averageScore = (totalScore / cat.criteria.length).toFixed(1);
-            const scoreColor = averageScore >= 7.0 ? 'border-green-500' : 'border-red-500';
-
-            const card = document.createElement('div');
-            card.classList.add('category-card', 'bg-white', 'p-6', 'rounded-2xl', 'shadow-md', 'border', 'border-gray-200');
-            card.style.backgroundColor = cat.colors[0];
-
-            let criteriaHtml = cat.criteria.map(c => `
-                <li class="flex justify-between items-center text-gray-800">
-                    <span class="font-medium">${c.name}</span>
-                    <span class="text-sm font-semibold">${c.score.toFixed(1)}</span>
-                </li>
-            `).join('');
-
-            card.innerHTML = `
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-semibold text-white flex items-center gap-2">${cat.category} ${cat.emoji}</h3>
-                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-white border-4 ${scoreColor} shadow-md text-gray-800 font-bold">${averageScore}</div>
-                </div>
-                <div class="flex justify-center items-center bg-white p-1 rounded-full mb-4">
-                    <button class="tab-comment-btn w-1/2 py-2 rounded-full text-sm font-semibold" data-tab-name="supervision" data-category="${cat.category}">Supervisión</button>
-                    <button class="tab-comment-btn w-1/2 py-2 rounded-full text-sm font-semibold" data-tab-name="quality" data-category="${cat.category}">Calidad</button>
-                </div>
-                <div class="bg-white p-4 rounded-xl shadow-inner text-left text-gray-700 h-20 mb-4 overflow-y-auto">
-                    <p class="comment-text" data-comment-for="${cat.category}"></p>
-                </div>
-                <button class="toggle-criteria-btn w-full text-left py-2 px-4 flex justify-between items-center text-sm font-semibold rounded-lg text-white bg-opacity-30 hover:bg-opacity-50 transition duration-200">
-                    Criterios de Calificación
-                    <span class="arrow-icon">&#9660;</span>
-                </button>
-                <div class="criteria-content bg-white p-4 rounded-lg" data-criteria-for="${cat.category}">
-                    <ul class="space-y-2 text-sm text-left">
-                        ${criteriaHtml}
-                    </ul>
-                </div>
-            `;
-            categoriasContainer.appendChild(card);
-        });
-
-        document.querySelectorAll('.tab-comment-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const category = e.target.dataset.category;
-                const tabName = e.target.dataset.tabName;
-                const commentTextElement = document.querySelector(`.comment-text[data-comment-for="${category}"]`);
-                const categoryData = database.evaluationData.find(d => d.category === category);
-
-                document.querySelectorAll(`.tab-comment-btn[data-category="${category}"]`).forEach(b => {
-                    b.style.backgroundColor = 'transparent';
-                    b.style.color = '#4a5568';
-                });
-
-                e.target.style.backgroundColor = categoryData.colors[1];
-                e.target.style.color = 'white';
-                commentTextElement.textContent = categoryData.comments[tabName];
-            });
-        });
-
-        document.querySelectorAll('.toggle-criteria-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const card = btn.closest('.category-card');
-                const criteriaContent = card.querySelector('.criteria-content');
-                const arrowIcon = btn.querySelector('.arrow-icon');
-                
-                if (criteriaContent.classList.contains('open')) {
-                    criteriaContent.classList.remove('open');
-                    criteriaContent.style.maxHeight = '0';
-                } else {
-                    criteriaContent.classList.add('open');
-                    criteriaContent.style.maxHeight = criteriaContent.scrollHeight + 'px';
-                }
-                arrowIcon.classList.toggle('open');
-            });
-        });
-
-        document.querySelectorAll('.tab-comment-btn').forEach(btn => {
-            if (btn.dataset.tabName === 'supervision') {
-                btn.click();
-            }
-        });
-    }
-
-    function renderBadges() {
-        const badgesList = document.getElementById('badges-list');
-        const nextBadgesList = document.getElementById('next-badges-list');
-        badgesList.innerHTML = '';
-        nextBadgesList.innerHTML = '';
-
-        database.badges.forEach(badge => {
-            badgesList.innerHTML += `
-                <li class="flex items-start gap-3">
-                    <span class="text-2xl">${badge.icon}</span>
-                    <div>
-                        <h3 class="font-semibold text-lg">${badge.title}</h3>
-                        <p class="text-gray-600">${badge.description}</p>
-                    </div>
-                </li>
-            `;
-        });
-
-        database.nextBadges.forEach(badge => {
-            nextBadgesList.innerHTML += `
-                <li class="flex items-start gap-3">
-                    <span class="text-2xl">${badge.icon}</span>
-                    <div>
-                        <h3 class="font-semibold text-lg">${badge.title}</h3>
-                        <p class="text-gray-600">${badge.description}</p>
-                        ${badge.meta ? `<p class="text-gray-600 font-bold mt-1">Meta: ${badge.meta}</p>` : ''}
-                    </div>
-                </li>
-            `;
-        });
-    }
-
-    tabs.forEach(tab => {
-        tab.addEventListener('click', (e) => {
-            document.querySelectorAll('.tab-page').forEach(page => page.classList.add('hidden'));
-            tabs.forEach(t => t.classList.remove('bg-[#2a6aff]', 'text-white'));
-            
-            const tabId = e.target.dataset.tab;
-            document.getElementById(`${tabId}-content`).classList.remove('hidden');
-            e.target.classList.add('bg-[#2a6aff]', 'text-white');
-            
-            if (tabId === 'tendencias') {
-                renderTrendsChart();
-            }
-        });
-    });
-
-    function renderTrendsChart() {
-        const ctx = document.getElementById('performance-chart').getContext('2d');
-        const months = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'M8', 'M9', 'M10', 'M11', 'M12'];
-        const datasets = Object.keys(database.trendsData).map(key => ({
-            label: key,
-            data: database.trendsData[key],
-            borderColor: database.trendsColors[key],
-            fill: false,
-            tension: 0.4,
-            hidden: false
-        }));
-
-        if (chartInstance) {
-            chartInstance.destroy();
-        }
-
-        chartInstance = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: months,
-                datasets: datasets
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                    }
-                },
-                scales: {
-                    y: {
-                        title: {
-                            display: true,
-                            text: 'Puntaje de Evaluación'
-                        },
-                        min: 0,
-                        max: 10,
-                        ticks: {
-                            stepSize: 1
-                        }
-                    },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Módulos'
-                        }
-                    }
+            'usuario02': {
+                password: 'password123',
+                role: 'user',
+                id: 'usuario02',
+                name: 'Carlos Rodríguez López',
+                username: 'usuario02',
+                generalScore: 92,
+                generalComments: 'Muy buen desempeño general. Excelente manejo de procesos académicos y comunicación con estudiantes.',
+                categories: {
+                    'RETENCIÓN': { score: 95, criteria: ['Seguimiento a población morosa', 'Total de bajas de alumnos con morosidad', 'Uso adecuado y oportuno de la columna de retención de CRM', 'Retención y bajas pagadas'] },
+                    'REINCORPORACIÓN': { score: 90, criteria: ['Bajas por no pago', 'Búsqueda y difusión de promociones', 'Registro y seguimiento', 'Cierre de prospectos', 'Total de reingresos'] },
+                    'PROCESOS': { score: 91, criteria: ['Búsqueda de alumnos por estatus y perfil: semana 1 a la semana 4', 'Procesos académicos', 'Trámites escolares'] },
+                    'LLAMADA': { score: 94, criteria: ['Se presenta con su nombre e identificación de la Universidad', 'Maneja motivo de la llamada de manera adecuada'] },
+                    'WHATSAPP': { score: 88, criteria: ['Emplea redacción adecuada', 'Crea bocetos', 'Responde todos los mensajes', 'Contesta preguntas en un rango de 12 horas o menos', 'Brinda soluciones pertinentes', 'Propone llamada para una mejor explicación', 'Es empático (a)'] },
+                    'CORREO ELECTRÓNICO': { score: 93, criteria: ['Emplea redacción adecuada', 'Crea bocetos previos a enviar', 'Responde todos los mensajes', 'Contesta preguntas en un rango de 12 horas o menos', 'Atiende en tiempo la asignación de correos institucionales', 'Brinda soluciones pertinentes', 'Propone llamada para una mejor explicación', 'Es empático (a)', 'Mantiene control sobre sus emociones en casos difíciles'] },
+                    'VIVA ENGAGE': { score: 89, criteria: ['La reunión previa a la publicación se realiza de forma exitosa', 'Se nota una excelente organización y trabajo en equipo', 'Se utilizan imágenes, videos o elementos gráficos llamativos y bien diseñados', 'Se publica en la fecha establecida sin retrasos'] },
+                    'ACTIVIDADES ADMINISTRATIVAS': { score: 96, criteria: ['Asigna y actualiza perfiles', 'Especifica a través de que medio abordó al alumno', 'Registra en tiempo (diario) sus actividades en el reporte de seguimiento CRM', 'Organiza sus tiempos para cumplir con el % mínimo (90%) de contactación', 'Logra el % mínimo de contactación'] }
                 }
             }
-        });
+        };
 
-        const chartButtonsContainer = document.getElementById('chart-buttons-container');
-        chartButtonsContainer.innerHTML = `
-            <button id="select-all-btn" class="bg-gray-300 text-gray-800 py-2 px-4 rounded-xl text-sm transition-colors duration-200 hover:bg-gray-400">Seleccionar Todo</button>
-            <button id="deselect-all-btn" class="bg-gray-300 text-gray-800 py-2 px-4 rounded-xl text-sm transition-colors duration-200 hover:bg-gray-400">Desactivar Todo</button>
-        `;
-        Object.keys(database.trendsData).forEach(key => {
-            const button = document.createElement('button');
-            button.textContent = key;
-            button.dataset.category = key;
-            button.classList.add('bg-gray-300', 'text-gray-800', 'py-2', 'px-4', 'rounded-xl', 'text-sm', 'transition-colors', 'duration-200', 'hover:bg-gray-400', 'chart-category-btn');
-            button.addEventListener('click', () => {
-                const dataset = chartInstance.data.datasets.find(ds => ds.label === key);
-                if (dataset) {
-                    dataset.hidden = !dataset.hidden;
-                    chartInstance.update();
-                }
-            });
-            chartButtonsContainer.appendChild(button);
-        });
-        
-        document.getElementById('select-all-btn').addEventListener('click', () => {
-            chartInstance.data.datasets.forEach(dataset => dataset.hidden = false);
-            chartInstance.update();
-        });
-        document.getElementById('deselect-all-btn').addEventListener('click', () => {
-            chartInstance.data.datasets.forEach(dataset => dataset.hidden = true);
-            chartInstance.update();
-        });
-    }
+        // Configuración demo actualizada
+        const demoConfig = {
+            loginTexts: {
+                mainTitle: 'Evaluación Modular – Universidad Virtual CNCI',
+                subtitle: 'Departamento de Servicios Estudiantiles',
+                description: 'Consulta tu desempeño del módulo de manera detallada ingresando tu usuario'
+            },
+            evaluationTemplate: {
+                categories: [
+                    {
+                        name: 'RETENCIÓN',
+                        criteria: ['Seguimiento a población morosa', 'Total de bajas de alumnos con morosidad', 'Uso adecuado y oportuno de la columna de retención de CRM, considerando movimientos del alumno para aplicar estrategias para su permanencia', 'Retención y bajas pagadas']
+                    },
+                    {
+                        name: 'REINCORPORACIÓN',
+                        criteria: ['Bajas por no pago', 'Búsqueda y difusión de promociones', 'Registro y seguimiento', 'Cierre de prospectos', 'Total de reingresos']
+                    },
+                    {
+                        name: 'PROCESOS',
+                        criteria: ['Búsqueda de alumnos por estatus y perfil: semana 1 a la semana 4', 'Procesos académicos: Cambio de carrera y/o programa, Cambio de modelo educativo, Cambio de módulo, Exámenes extraordinarios, Materias adicionales, Programa de inglés y Reducción de materias', 'Trámites escolares: Servicio Social, Solicitud de constancia y Kardex, Titulación y Trámite de credencial']
+                    },
+                    {
+                        name: 'LLAMADA',
+                        criteria: ['Se presenta con su nombre e identificación de la Universidad', 'Maneja motivo de la llamada de manera adecuada']
+                    },
+                    {
+                        name: 'WHATSAPP',
+                        criteria: ['Emplea redacción adecuada', 'Crea bocetos', 'Responde todos los mensajes', 'Contesta preguntas en un rango de 12 horas o menos', 'Brinda soluciones pertinentes', 'Propone llamada para una mejor explicación', 'Es empático (a)']
+                    },
+                    {
+                        name: 'CORREO ELECTRÓNICO',
+                        criteria: ['Emplea redacción adecuada', 'Crea bocetos previos a enviar', 'Responde todos los mensajes', 'Contesta preguntas en un rango de 12 horas o menos', 'Atiende en tiempo la asignación de correos institucionales, agregando su firma al momento de brindar respuesta a los alumnos', 'Brinda soluciones pertinentes', 'Propone llamada para una mejor explicación', 'Es empático (a)', 'Mantiene control sobre sus emociones en casos difíciles']
+                    },
+                    {
+                        name: 'VIVA ENGAGE',
+                        criteria: ['La reunión previa a la publicación se realiza de forma exitosa (se concreta tema, minuta y solicitud de material)', 'Se nota una excelente organización y trabajo en equipo', 'Se utilizan imágenes, videos o elementos gráficos llamativos y bien diseñados', 'Se publica en la fecha establecida sin retrasos']
+                    },
+                    {
+                        name: 'ACTIVIDADES ADMINISTRATIVAS',
+                        criteria: ['Asigna y actualiza perfiles', 'Especifica a través de que medio abordó al alumno', 'Registra en tiempo (diario) sus actividades en el reporte de seguimiento CRM', 'Organiza sus tiempos para cumplir con el % mínimo (90%) de contactación', 'Logra el % mínimo de contactación']
+                    }
+                ]
+            }
+        };
 
-    // Lógica del Panel de Administrador
-    function renderAdminPanel() {
-        renderUsersTable();
-        document.getElementById('admin-login-title').value = database.loginTexts.title;
-        document.getElementById('admin-login-subtitle').value = database.loginTexts.subtitle;
-        document.getElementById('admin-login-description').value = database.loginTexts.description;
-    }
+        // Elementos del DOM
+        const loginScreen = document.getElementById('loginScreen');
+        const adminPanel = document.getElementById('adminPanel');
+        const dashboard = document.getElementById('dashboard');
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
 
-    // Renderizar la tabla de usuarios
-    function renderUsersTable() {
-        usersTableBody.innerHTML = '';
-        const userList = Object.values(database.users).filter(u => u.role === 'user');
-        
-        userList.forEach(user => {
-            const row = document.createElement('tr');
-            row.dataset.userId = user.id;
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Manejar envío del formulario de login
+            loginForm.addEventListener('submit', handleLogin);
             
-            row.innerHTML = `
-                <td class="user-id">${user.id}</td>
-                <td class="user-name">${user.name}</td>
-                <td class="user-general-score">${user.generalScore}</td>
-                <td class="user-calls-score">${user.callsScore}</td>
-                <td class="user-comments">${user.generalComments.length > 50 ? user.generalComments.substring(0, 50) + '...' : user.generalComments}</td>
-                <td class="actions-cell">
-                    <div class="flex flex-col sm:flex-row gap-2">
-                        <button class="edit-user-btn bg-yellow-400 text-gray-800 py-1 px-3 rounded-full text-xs font-semibold hover:bg-yellow-500 transition duration-200">
-                            Editar
-                        </button>
-                        <button class="delete-user-btn bg-red-400 text-white py-1 px-3 rounded-full text-xs font-semibold hover:bg-red-500 transition duration-200">
-                            Eliminar
-                        </button>
-                        <button class="details-user-btn bg-blue-400 text-white py-1 px-3 rounded-full text-xs font-semibold hover:bg-blue-500 transition duration-200">
-                            Detalles
-                        </button>
-                    </div>
-                </td>
-            `;
-            usersTableBody.appendChild(row);
-        });
-    }
-
-    // Lógica para añadir/editar usuario
-    addUserBtn.addEventListener('click', () => {
-        userModalTitle.textContent = 'Añadir Nuevo Usuario';
-        userForm.reset();
-        userModalContainer.classList.remove('hidden');
-    });
-
-    userModalCancelBtn.addEventListener('click', () => {
-        userModalContainer.classList.add('hidden');
-    });
-
-    userForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const userId = document.getElementById('form-id').value.trim();
-        const userName = document.getElementById('form-name').value.trim();
-        const userRole = document.getElementById('form-role').value;
-        const generalScore = parseFloat(document.getElementById('form-general-score').value);
-        const callsScore = parseFloat(document.getElementById('form-calls-score').value);
-        const comments = document.getElementById('form-comments').value.trim();
-
-        if (database.users[userId] && userModalTitle.textContent === 'Añadir Nuevo Usuario') {
-            showModal('Error', 'El usuario ya existe. Por favor, elige otro ID.');
-            return;
-        }
-        
-        if (userModalTitle.textContent === 'Añadir Nuevo Usuario') {
-            const newUser = {
-                id: userId,
-                name: userName,
-                role: userRole,
-                generalScore: generalScore || 0,
-                callsScore: callsScore || 0,
-                generalComments: comments || '',
-                dashboardTitle: 'Resultados de Evaluación 📊',
-                evalDetailsLink: `https://example.com/detalles/${userId}`,
-                planLink: `https://example.com/plan-de-trabajo/${userId}`,
-                improvement: `La mayor mejora para ${userName} es...`,
-                criticalArea: `El área crítica para ${userName} es...`,
-                planInstructions: `Instrucciones del plan de mejora para ${userName}.`,
-                monthlyScores: {
-                    'Hace 2 Meses': '0.0',
-                    'Mes Anterior': '0.0',
-                    'Mes Actual': '0.0'
-                }
-            };
-            database.users[userId] = newUser;
-            showModal('Éxito', 'Usuario añadido correctamente.');
-        } else {
-            const currentId = userModalContainer.dataset.editingId;
-            const user = database.users[currentId];
-            if (user) {
-                user.id = userId;
-                user.name = userName;
-                user.role = userRole;
-                user.generalScore = generalScore;
-                user.callsScore = callsScore;
-                user.generalComments = comments;
-
-                if (currentId !== userId) {
-                    delete database.users[currentId];
-                    database.users[userId] = user;
-                }
-            }
-            showModal('Éxito', 'Usuario actualizado correctamente.');
-        }
-
-        userModalContainer.classList.add('hidden');
-        saveDatabase();
-        renderUsersTable();
-    });
-
-    // Delegación de eventos para la tabla
-    usersTableBody.addEventListener('click', (e) => {
-        const row = e.target.closest('tr');
-        if (!row) return;
-
-        const userId = row.dataset.userId;
-
-        if (e.target.classList.contains('edit-user-btn')) {
-            const user = database.users[userId];
-            if (user) {
-                userModalTitle.textContent = 'Editar Usuario';
-                document.getElementById('form-id').value = user.id;
-                document.getElementById('form-name').value = user.name;
-                document.getElementById('form-role').value = user.role;
-                document.getElementById('form-general-score').value = user.generalScore;
-                document.getElementById('form-calls-score').value = user.callsScore;
-                document.getElementById('form-comments').value = user.generalComments;
-                userModalContainer.dataset.editingId = userId;
-                userModalContainer.classList.remove('hidden');
-            }
-        } else if (e.target.classList.contains('delete-user-btn')) {
-            if (confirm(`¿Estás seguro de que quieres eliminar al usuario ${userId}?`)) {
-                delete database.users[userId];
-                saveDatabase();
-                renderUsersTable();
-                showModal('Éxito', 'Usuario eliminado correctamente.');
-            }
-        } else if (e.target.classList.contains('details-user-btn')) {
-            const user = database.users[userId];
-            if (user) {
-                populateDetailsModal(user);
-                detailsModalContainer.classList.remove('hidden');
-                detailsModalContainer.dataset.editingId = userId;
-            }
-        }
-    });
-
-    // Lógica para el modal de detalles
-    function populateDetailsModal(user) {
-        document.getElementById('details-modal-title').textContent = `Detalles de ${user.name}`;
-        document.getElementById('details-dashboard-title').value = user.dashboardTitle;
-        document.getElementById('details-eval-link').value = user.evalDetailsLink;
-        document.getElementById('details-plan-link').value = user.planLink;
-        document.getElementById('details-general-comments').value = user.generalComments;
-        document.getElementById('details-improvement').value = user.improvement;
-        document.getElementById('details-critical-area').value = user.criticalArea;
-        document.getElementById('details-plan-instructions').value = user.planInstructions;
-
-        // Populate Trends data
-        const trendsFormContainer = document.getElementById('trends-form-container');
-        trendsFormContainer.innerHTML = '';
-        Object.keys(database.trendsData).forEach(trend => {
-            trendsFormContainer.innerHTML += `
-                <div class="space-y-2 mb-4 p-2 border rounded-lg bg-white">
-                    <h5 class="font-bold">${trend}</h5>
-                    <div class="grid grid-cols-2 gap-2">
-                        ${database.trendsData[trend].map((score, index) => `
-                            <label class="text-xs">
-                                M${index + 1}:
-                                <input type="number" step="0.1" min="0" max="10" class="w-full p-1 border rounded" value="${score}" data-trend="${trend}" data-month="${index}">
-                            </label>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        });
-
-        // Populate Categories and Criteria data
-        const criteriaFormContainer = document.getElementById('criteria-form-container');
-        criteriaFormContainer.innerHTML = '';
-        database.evaluationData.forEach(category => {
-            criteriaFormContainer.innerHTML += `
-                <div class="bg-gray-100 p-4 rounded-xl">
-                    <h4 class="text-lg font-semibold mb-2">Categoría: ${category.category}</h4>
-                    <div id="criteria-for-${category.category.replace(/\s/g, '-')}" class="space-y-2">
-                        ${category.criteria.map(criteria => `
-                            <div class="flex items-center gap-2">
-                                <span class="flex-1 text-sm">${criteria.name}</span>
-                                <input type="number" step="0.1" min="0" max="10" class="w-20 p-1 border rounded text-right" value="${criteria.score}" data-category="${category.category}" data-criteria="${criteria.name}">
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        });
-    }
-
-    detailsForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const userId = detailsModalContainer.dataset.editingId;
-        const user = database.users[userId];
-        if (user) {
-            user.dashboardTitle = document.getElementById('details-dashboard-title').value;
-            user.evalDetailsLink = document.getElementById('details-eval-link').value;
-            user.planLink = document.getElementById('details-plan-link').value;
-            user.generalComments = document.getElementById('details-general-comments').value;
-            user.improvement = document.getElementById('details-improvement').value;
-            user.criticalArea = document.getElementById('details-critical-area').value;
-            user.planInstructions = document.getElementById('details-plan-instructions').value;
-
-            // Update Trends data
-            document.querySelectorAll('#trends-form-container input').forEach(input => {
-                const trend = input.dataset.trend;
-                const month = parseInt(input.dataset.month);
-                database.trendsData[trend][month] = parseFloat(input.value);
-            });
-
-            // Update Criteria scores
-            document.querySelectorAll('#criteria-form-container input').forEach(input => {
-                const category = input.dataset.category;
-                const criteriaName = input.dataset.criteria;
-                const categoryData = database.evaluationData.find(c => c.category === category);
-                if (categoryData) {
-                    const criteria = categoryData.criteria.find(c => c.name === criteriaName);
-                    if (criteria) {
-                        criteria.score = parseFloat(input.value);
-                    }
+            // Permitir login con Enter
+            document.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !loginScreen.classList.contains('hidden')) {
+                    handleLogin(e);
                 }
             });
 
-            saveDatabase();
-            showModal('Éxito', 'Detalles de usuario actualizados correctamente.');
-            detailsModalContainer.classList.add('hidden');
+            // Botones de navegación
+            document.getElementById('adminLogout').addEventListener('click', logout);
+            document.getElementById('backToLogin').addEventListener('click', logout);
+
+            // Tabs
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    switchTab(this.dataset.tab);
+                });
+            });
+
+            // Admin Panel Event Listeners
+            setupAdminEventListeners();
+            
+            // Download Report Event Listener
+            document.getElementById('downloadReportBtn').addEventListener('click', generateAndDownloadReport);
+
+            // Inicializar datos
+            loadCategoriesData();
+        });
+
+        function setupAdminEventListeners() {
+            // Guardar textos de login
+            document.getElementById('saveLoginTexts').addEventListener('click', saveLoginTexts);
+
+            // Gestión de usuarios
+            document.getElementById('addUserBtn').addEventListener('click', () => openUserModal());
+            document.getElementById('clearTableBtn').addEventListener('click', showConfirmModal);
+
+            // Modales de usuario
+            document.getElementById('closeUserModal').addEventListener('click', closeUserModal);
+            document.getElementById('cancelUserModal').addEventListener('click', closeUserModal);
+            document.getElementById('userForm').addEventListener('submit', saveUser);
+
+            // Modal de detalles
+            document.getElementById('closeDetailsModal').addEventListener('click', closeDetailsModal);
+            document.getElementById('cancelDetailsModal').addEventListener('click', closeDetailsModal);
+            document.getElementById('userDetailsForm').addEventListener('submit', saveUserDetails);
+
+            // Modal de confirmación
+            document.getElementById('confirmClear').addEventListener('click', clearAllUsers);
+            document.getElementById('cancelClear').addEventListener('click', closeConfirmModal);
+
+            // Modales de categorías
+            document.getElementById('editCategoriesBtn').addEventListener('click', openCategoriesModal);
+            document.getElementById('closeCategoriesModal').addEventListener('click', closeCategoriesModal);
+            document.getElementById('cancelCategoriesBtn').addEventListener('click', closeCategoriesModal);
+            document.getElementById('addCategoryBtn').addEventListener('click', addCategoryRow);
+            document.getElementById('saveCategoriesBtn').addEventListener('click', saveCategories);
         }
-    });
 
-    detailsModalCancelBtn.addEventListener('click', () => { detailsModalContainer.classList.add('hidden'); });
-    detailsModalCancelTopBtn.addEventListener('click', () => { detailsModalContainer.classList.add('hidden'); });
+        // Función de login actualizada para usar nicknames
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Buscar usuario por nickname
+            const user = demoUsers[username];
+            
+            if (user && user.password === password) {
+                currentUser = user;
+                loginError.classList.add('hidden');
+                
+                if (user.role === 'admin') {
+                    showAdminPanel();
+                } else {
+                    showDashboard();
+                }
+            } else {
+                loginError.classList.remove('hidden');
+            }
+        }
 
-    // Lógica para vaciar la tabla
-    emptyTableBtn.addEventListener('click', () => {
-        confirmModalContainer.classList.remove('hidden');
-    });
+        // Mostrar panel de administrador
+        function showAdminPanel() {
+            loginScreen.classList.add('hidden');
+            dashboard.classList.add('hidden');
+            adminPanel.classList.remove('hidden');
+            
+            loadAdminData();
+        }
 
-    confirmEmptyBtn.addEventListener('click', () => {
-        const adminUser = database.users['admin'];
-        database.users = { 'admin': adminUser };
-        saveDatabase();
-        renderUsersTable();
-        confirmModalContainer.classList.add('hidden');
-        showModal('Tabla Vaciada', 'Todos los datos de usuarios han sido eliminados correctamente.');
-    });
+        // Mostrar dashboard
+        function showDashboard() {
+            loginScreen.classList.add('hidden');
+            adminPanel.classList.add('hidden');
+            dashboard.classList.remove('hidden');
+            
+            loadUserData();
+        }
 
-    cancelEmptyBtn.addEventListener('click', () => {
-        confirmModalContainer.classList.add('hidden');
-    });
+        // Cargar datos del usuario
+        function loadUserData() {
+            if (!currentUser) return;
+            
+            document.getElementById('userName').textContent = currentUser.name;
+            document.getElementById('generalScore').textContent = currentUser.generalScore + '/100';
+            document.getElementById('generalComments').textContent = currentUser.generalComments;
+            
+            loadEvaluationCategories();
+        }
 
-    // Lógica para editar categorías/criterios
-    editCategoriesBtn.addEventListener('click', () => {
-        renderCategoriesModal();
-        categoriesModalContainer.classList.remove('hidden');
-    });
-    
-    function renderCategoriesModal() {
-        categoriesListContainer.innerHTML = '';
-        database.evaluationData.forEach(cat => {
-            const categoryDiv = document.createElement('div');
-            categoryDiv.classList.add('p-4', 'border', 'rounded-lg', 'bg-white', 'space-y-2');
-            categoryDiv.innerHTML = `
-                <div class="flex justify-between items-center">
-                    <input type="text" class="category-name-input text-lg font-bold w-4/5 p-1 border rounded" value="${cat.category}">
-                    <button type="button" class="remove-category-btn text-red-500 font-bold text-xl leading-none">&times;</button>
-                </div>
-                <label class="block">Emoji: <input type="text" class="category-emoji-input w-20 p-1 border rounded" value="${cat.emoji}"></label>
-                <div class="space-y-1 mt-2 criteria-inputs">
-                    <h5 class="font-semibold text-sm">Criterios:</h5>
-                    ${cat.criteria.map(crit => `
-                        <div class="flex items-center gap-2">
-                            <input type="text" class="criteria-name-input flex-1 p-1 border rounded" value="${crit.name}">
-                            <button type="button" class="remove-criteria-btn text-red-500 font-bold text-xl leading-none">&times;</button>
+        // Cargar categorías de evaluación
+        function loadEvaluationCategories() {
+            const container = document.getElementById('evaluationCategories');
+            container.innerHTML = '';
+            
+            if (!currentUser.categories) return;
+            
+            Object.entries(currentUser.categories).forEach(([categoryName, categoryData]) => {
+                const categoryCard = document.createElement('div');
+                categoryCard.className = 'bg-white border border-gray-200 rounded-xl p-6 card-shadow slide-in';
+                
+                const criteriaList = categoryData.criteria.map(criteria => 
+                    `<span class="inline-block bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm mr-2 mb-2">${criteria}</span>`
+                ).join('');
+                
+                categoryCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <h4 class="text-lg font-semibold text-gray-800">${categoryName}</h4>
+                        <div class="text-right">
+                            <div class="text-2xl font-bold text-[#2a6aff]">${categoryData.score}</div>
+                            <div class="text-sm text-gray-500">puntos</div>
                         </div>
-                    `).join('')}
-                </div>
-                <button type="button" class="add-criteria-btn w-full bg-gray-100 text-gray-600 text-sm py-1 rounded-lg">Añadir Criterio</button>
-            `;
-            categoriesListContainer.appendChild(categoryDiv);
-        });
-    }
+                    </div>
+                    <div class="mb-4">
+                        <div class="bg-gray-200 rounded-full h-2">
+                            <div class="bg-gradient-to-r from-[#2a6aff] to-[#ff8500] h-2 rounded-full transition-all duration-500" 
+                                 style="width: ${categoryData.score}%"></div>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="text-sm text-gray-600 font-medium">Criterios evaluados:</p>
+                        <div>${criteriaList}</div>
+                    </div>
+                `;
+                
+                container.appendChild(categoryCard);
+            });
+        }
 
-    categoriesForm.addEventListener('click', (e) => {
-        if (e.target.classList.contains('add-criteria-btn')) {
-            const criteriaContainer = e.target.previousElementSibling;
-            const newCriteriaDiv = document.createElement('div');
-            newCriteriaDiv.classList.add('flex', 'items-center', 'gap-2');
-            newCriteriaDiv.innerHTML = `
-                <input type="text" class="criteria-name-input flex-1 p-1 border rounded" placeholder="Nuevo Criterio">
-                <button type="button" class="remove-criteria-btn text-red-500 font-bold text-xl leading-none">&times;</button>
-            `;
-            criteriaContainer.appendChild(newCriteriaDiv);
-        } else if (e.target.classList.contains('remove-category-btn')) {
-            if (categoriesListContainer.children.length > 1) {
-                e.target.closest('div.p-4').remove();
-            } else {
-                showModal('Error', 'Debe haber al menos una categoría.');
-            }
-        } else if (e.target.classList.contains('remove-criteria-btn')) {
-            const criteriaContainer = e.target.closest('.criteria-inputs');
-            if (criteriaContainer.children.length > 2) {
-                e.target.closest('div.flex').remove();
-            } else {
-                showModal('Error', 'Cada categoría debe tener al menos un criterio.');
+        // Cambiar pestañas
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('tab-active');
+                button.classList.add('text-gray-600');
+            });
+            
+            document.getElementById(tabName).classList.remove('hidden');
+            
+            const activeButton = document.querySelector(`[data-tab="${tabName}"]`);
+            activeButton.classList.add('tab-active');
+            activeButton.classList.remove('text-gray-600');
+        }
+
+        // Cerrar sesión
+        function logout() {
+            currentUser = null;
+            loginScreen.classList.remove('hidden');
+            adminPanel.classList.add('hidden');
+            dashboard.classList.add('hidden');
+            
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            loginError.classList.add('hidden');
+        }
+
+        // ===== FUNCIONES DEL PANEL DE ADMINISTRADOR =====
+
+        function loadAdminData() {
+            loadUsersTable();
+            loadLoginTexts();
+        }
+
+        function loadLoginTexts() {
+            const config = demoConfig.loginTexts;
+            document.getElementById('mainTitle').value = config.mainTitle;
+            document.getElementById('subtitle').value = config.subtitle;
+            document.getElementById('description').value = config.description;
+        }
+
+        async function saveLoginTexts() {
+            const loginTexts = {
+                mainTitle: document.getElementById('mainTitle').value,
+                subtitle: document.getElementById('subtitle').value,
+                description: document.getElementById('description').value
+            };
+
+            try {
+                demoConfig.loginTexts = loginTexts;
+                showNotification('✅ Textos de login actualizados correctamente');
+            } catch (error) {
+                console.error('Error guardando textos:', error);
+                showNotification('❌ Error al guardar los textos', 'error');
             }
         }
-    });
 
-    addCategoryBtn.addEventListener('click', () => {
-        const newCategoryDiv = document.createElement('div');
-        newCategoryDiv.classList.add('p-4', 'border', 'rounded-lg', 'bg-white', 'space-y-2');
-        newCategoryDiv.innerHTML = `
-            <div class="flex justify-between items-center">
-                <input type="text" class="category-name-input text-lg font-bold w-4/5 p-1 border rounded" placeholder="Nueva Categoría">
-                <button type="button" class="remove-category-btn text-red-500 font-bold text-xl leading-none">&times;</button>
-            </div>
-            <label class="block">Emoji: <input type="text" class="category-emoji-input w-20 p-1 border rounded" placeholder="👍"></label>
-            <div class="space-y-1 mt-2 criteria-inputs">
-                <h5 class="font-semibold text-sm">Criterios:</h5>
-                <div class="flex items-center gap-2">
-                    <input type="text" class="criteria-name-input flex-1 p-1 border rounded" placeholder="Nuevo Criterio">
-                    <button type="button" class="remove-criteria-btn text-red-500 font-bold text-xl leading-none">&times;</button>
-                </div>
-            </div>
-            <button type="button" class="add-criteria-btn w-full bg-gray-100 text-gray-600 text-sm py-1 rounded-lg">Añadir Criterio</button>
-        `;
-        categoriesListContainer.appendChild(newCategoryDiv);
-    });
+        function loadUsersTable() {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
 
-    categoriesModalCancelBtn.addEventListener('click', () => {
-        categoriesModalContainer.classList.add('hidden');
-    });
+            allUsers = Object.values(demoUsers).filter(user => user.role === 'user');
 
-    categoriesForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const newEvaluationData = [];
-        document.querySelectorAll('#categories-list-container > div').forEach(div => {
-            const categoryName = div.querySelector('.category-name-input').value;
-            const emoji = div.querySelector('.category-emoji-input').value;
-            const criteriaList = [];
-            div.querySelectorAll('.criteria-name-input').forEach(input => {
-                criteriaList.push({ name: input.value, score: 0 }); // Score is 0 by default, edited in details
+            allUsers.forEach(user => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-200 hover:bg-gray-50';
+                
+                const shortComments = user.generalComments ? 
+                    (user.generalComments.length > 50 ? user.generalComments.substring(0, 50) + '...' : user.generalComments) : 
+                    'Sin comentarios';
+
+                row.innerHTML = `
+                    <td class="px-4 py-3 text-sm text-gray-900">${user.username || 'N/A'}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">${user.name}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">${user.generalScore || 0}/100</td>
+                    <td class="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">${shortComments}</td>
+                    <td class="px-4 py-3 text-sm space-x-2">
+                        <button onclick="editUser('${user.username}')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs transition-all">
+                            ✏️ Editar
+                        </button>
+                        <button onclick="showUserDetails('${user.username}')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs transition-all">
+                            📊 Detalles
+                        </button>
+                        <button onclick="deleteUser('${user.username}')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition-all">
+                            🗑️ Eliminar
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
             });
-            newEvaluationData.push({
-                category: categoryName,
-                emoji: emoji,
-                colors: ['#2a6aff', '#4f8bff'], // Default colors
-                comments: { supervision: '', quality: '' }, // Default comments
-                criteria: criteriaList
-            });
-        });
-        database.evaluationData = newEvaluationData;
-        saveDatabase();
-        categoriesModalContainer.classList.add('hidden');
-        showModal('Éxito', 'Categorías y criterios actualizados correctamente.');
-    });
-
-    // Lógica para editar tendencias
-    editTrendsBtn.addEventListener('click', () => {
-        renderTrendsModal();
-        trendsModalContainer.classList.remove('hidden');
-    });
-
-    function renderTrendsModal() {
-        trendsListContainer.innerHTML = '';
-        Object.keys(database.trendsData).forEach(trend => {
-            const trendDiv = document.createElement('div');
-            trendDiv.classList.add('p-4', 'border', 'rounded-lg', 'bg-white', 'space-y-2');
-            trendDiv.innerHTML = `
-                <div class="flex justify-between items-center">
-                    <input type="text" class="trend-name-input text-lg font-bold w-4/5 p-1 border rounded" value="${trend}">
-                    <button type="button" class="remove-trend-btn text-red-500 font-bold text-xl leading-none">&times;</button>
-                </div>
-                <label class="block">Color: <input type="color" class="trend-color-input w-20 h-8 p-1 border rounded" value="${database.trendsColors[trend]}"></label>
-            `;
-            trendsListContainer.appendChild(trendDiv);
-        });
-    }
-
-    trendsForm.addEventListener('click', (e) => {
-        if (e.target.classList.contains('remove-trend-btn')) {
-            e.target.closest('div.p-4').remove();
         }
-    });
 
-    addTrendBtn.addEventListener('click', () => {
-        const newTrendDiv = document.createElement('div');
-        newTrendDiv.classList.add('p-4', 'border', 'rounded-lg', 'bg-white', 'space-y-2');
-        newTrendDiv.innerHTML = `
-            <div class="flex justify-between items-center">
-                <input type="text" class="trend-name-input text-lg font-bold w-4/5 p-1 border rounded" placeholder="Nueva Tendencia">
-                <button type="button" class="remove-trend-btn text-red-500 font-bold text-xl leading-none">&times;</button>
-            </div>
-            <label class="block">Color: <input type="color" class="trend-color-input w-20 h-8 p-1 border rounded" value="#cccccc"></label>
-        `;
-        trendsListContainer.appendChild(newTrendDiv);
-    });
+        // ===== GESTIÓN DE USUARIOS =====
 
-    trendsModalCancelBtn.addEventListener('click', () => {
-        trendsModalContainer.classList.add('hidden');
-    });
+        function openUserModal(username = null) {
+            currentEditingUser = username;
+            const modal = document.getElementById('userModal');
+            const title = document.getElementById('userModalTitle');
+            
+            if (username) {
+                title.textContent = '✏️ Editar Usuario';
+                const user = demoUsers[username];
+                document.getElementById('userId').value = user.username || '';
+                document.getElementById('userNameInput').value = user.name || '';
+                document.getElementById('userGeneralScore').value = user.generalScore || 0;
+                document.getElementById('userComments').value = user.generalComments || '';
+            } else {
+                title.textContent = '➕ Añadir Usuario';
+                document.getElementById('userForm').reset();
+            }
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
 
-    trendsForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const newTrendsData = {};
-        const newTrendsColors = {};
-        document.querySelectorAll('#trends-list-container > div').forEach(div => {
-            const trendName = div.querySelector('.trend-name-input').value;
-            const trendColor = div.querySelector('.trend-color-input').value;
-            newTrendsData[trendName] = Array(12).fill(0); // Default scores
-            newTrendsColors[trendName] = trendColor;
-        });
-        database.trendsData = newTrendsData;
-        database.trendsColors = newTrendsColors;
-        saveDatabase();
-        trendsModalContainer.classList.add('hidden');
-        showModal('Éxito', 'Categorías de tendencias actualizadas correctamente.');
-    });
+        function closeUserModal() {
+            const modal = document.getElementById('userModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            currentEditingUser = null;
+        }
 
-    // Guardar configuración general del login (CORREGIDO)
-document.getElementById('save-general-settings-btn').addEventListener('click', () => {
-    // 1. Leer los nuevos valores desde los campos del formulario.
-    const newTitle = document.getElementById('admin-login-title').value;
-    const newSubtitle = document.getElementById('admin-login-subtitle').value;
-    const newDescription = document.getElementById('admin-login-description').value;
+        async function saveUser(e) {
+            e.preventDefault();
+            
+            const userData = {
+                username: document.getElementById('userId').value,
+                name: document.getElementById('userNameInput').value,
+                role: 'user',
+                password: 'password123',
+                generalScore: parseInt(document.getElementById('userGeneralScore').value),
+                generalComments: document.getElementById('userComments').value,
+                categories: demoUsers['usuario01'].categories // Categorías por defecto
+            };
 
-    // 2. Actualizar el objeto 'database' en la memoria (LA PARTE QUE FALTABA).
-    database.loginTexts.title = newTitle;
-    database.loginTexts.subtitle = newSubtitle;
-    database.loginTexts.description = newDescription;
+            try {
+                demoUsers[userData.username] = userData;
+                
+                closeUserModal();
+                loadUsersTable();
+                showNotification('✅ Usuario guardado correctamente');
+            } catch (error) {
+                console.error('Error guardando usuario:', error);
+                showNotification('❌ Error al guardar el usuario', 'error');
+            }
+        }
 
-    // 3. Actualizar la vista de la pantalla de login en vivo (para consistencia visual).
-    document.getElementById('login-title').textContent = newTitle;
-    document.getElementById('login-subtitle').textContent = newSubtitle;
-    document.getElementById('login-description').textContent = newDescription;
+        function editUser(username) {
+            openUserModal(username);
+        }
 
-    // 4. Guardar la base de datos actualizada en localStorage.
-    saveDatabase();
+        async function deleteUser(username) {
+            if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
+                try {
+                    delete demoUsers[username];
+                    loadUsersTable();
+                    showNotification('✅ Usuario eliminado correctamente');
+                } catch (error) {
+                    console.error('Error eliminando usuario:', error);
+                    showNotification('❌ Error al eliminar el usuario', 'error');
+                }
+            }
+        }
 
-    // 5. Mostrar confirmación al usuario.
-    showModal('Configuración Guardada', 'Los textos de la pantalla de login han sido actualizados.');
-});
+        // ===== MODAL DE DETALLES =====
 
-    // Cargar la configuración de login al inicio
-    document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('login-title').textContent = database.loginTexts.title;
-        document.getElementById('login-subtitle').textContent = database.loginTexts.subtitle;
-        document.getElementById('login-description').textContent = database.loginTexts.description;
-    });
-</script>
+        function showUserDetails(username) {
+            const user = demoUsers[username];
+            if (!user) return;
 
-</body>
+            document.getElementById('detailsUserId').value = user.username || '';
+            document.getElementById('detailsUserName').value = user.name || '';
+            document.getElementById('detailsUserRole').value = user.role || 'user';
+            document.getElementById('detailsGeneralScore').value = user.generalScore || 0;
+            document.getElementById('detailsGeneralComments').value = user.generalComments || '';
+
+            loadUserCategories(user);
+
+            currentEditingUser = username;
+            const modal = document.getElementById('userDetailsModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function loadUserCategories(user) {
+            const container = document.getElementById('categoriesContainer');
+            container.innerHTML = '';
+
+            if (user.categories) {
+                Object.entries(user.categories).forEach(([categoryName, categoryData]) => {
+                    const categoryDiv = document.createElement('div');
+                    categoryDiv.className = 'bg-gray-50 p-4 rounded-lg';
+                    
+                    const criteriaInputs = categoryData.criteria.map((criteria, index) => 
+                        `<input type="text" value="${criteria}" class="criteria-input w-full px-3 py-1 border border-gray-300 rounded mb-2" data-category="${categoryName}" data-index="${index}">`
+                    ).join('');
+
+                    categoryDiv.innerHTML = `
+                        <div class="flex justify-between items-center mb-3">
+                            <h5 class="font-semibold text-gray-800">${categoryName}</h5>
+                            <input type="number" value="${categoryData.score}" min="0" max="100" 
+                                   class="category-score w-20 px-2 py-1 border border-gray-300 rounded" 
+                                   data-category="${categoryName}">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700">Criterios:</label>
+                            ${criteriaInputs}
+                        </div>
+                    `;
+                    
+                    container.appendChild(categoryDiv);
+                });
+            }
+        }
+
+        function closeDetailsModal() {
+            const modal = document.getElementById('userDetailsModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            currentEditingUser = null;
+        }
+
+        async function saveUserDetails(e) {
+            e.preventDefault();
+            
+            if (!currentEditingUser) return;
+
+            const userData = {
+                username: document.getElementById('detailsUserId').value,
+                name: document.getElementById('detailsUserName').value,
+                role: document.getElementById('detailsUserRole').value,
+                generalScore: parseInt(document.getElementById('detailsGeneralScore').value),
+                generalComments: document.getElementById('detailsGeneralComments').value,
+                categories: {}
+            };
+
+            document.querySelectorAll('.category-score').forEach(input => {
+                const categoryName = input.dataset.category;
+                const score = parseInt(input.value);
+                
+                const criteriaInputs = document.querySelectorAll(`[data-category="${categoryName}"].criteria-input`);
+                const criteria = Array.from(criteriaInputs).map(input => input.value);
+                
+                userData.categories[categoryName] = { score, criteria };
+            });
+
+            try {
+                demoUsers[currentEditingUser] = { ...demoUsers[currentEditingUser], ...userData };
+                
+                closeDetailsModal();
+                loadUsersTable();
+                showNotification('✅ Detalles del usuario actualizados correctamente');
+            } catch (error) {
+                console.error('Error actualizando usuario:', error);
+                showNotification('❌ Error al actualizar el usuario', 'error');
+            }
+        }
+
+        // ===== VACIAR TABLA =====
+
+        function showConfirmModal() {
+            const modal = document.getElementById('confirmModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeConfirmModal() {
+            const modal = document.getElementById('confirmModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        async function clearAllUsers() {
+            try {
+                Object.keys(demoUsers).forEach(username => {
+                    if (demoUsers[username].role === 'user') {
+                        delete demoUsers[username];
+                    }
+                });
+                
+                closeConfirmModal();
+                loadUsersTable();
+                showNotification('✅ Todos los usuarios han sido eliminados');
+            } catch (error) {
+                console.error('Error vaciando tabla:', error);
+                showNotification('❌ Error al vaciar la tabla', 'error');
+            }
+        }
+
+        // ===== GESTIÓN DE CATEGORÍAS =====
+
+        function loadCategoriesData() {
+            categoriesData = [...demoConfig.evaluationTemplate.categories];
+        }
+
+        function openCategoriesModal() {
+            loadCategoriesEditContainer();
+            const modal = document.getElementById('categoriesModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeCategoriesModal() {
+            const modal = document.getElementById('categoriesModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function loadCategoriesEditContainer() {
+            const container = document.getElementById('categoriesEditContainer');
+            container.innerHTML = '';
+
+            categoriesData.forEach((category, index) => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'bg-gray-50 p-4 rounded-lg';
+                
+                const criteriaInputs = category.criteria.map((criteria, criteriaIndex) => 
+                    `<div class="flex items-center space-x-2 mb-2">
+                        <input type="text" value="${criteria}" class="flex-1 px-3 py-1 border border-gray-300 rounded text-sm" data-category="${index}" data-criteria="${criteriaIndex}">
+                        <button type="button" onclick="removeCriteria(${index}, ${criteriaIndex})" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs">
+                            🗑️
+                        </button>
+                    </div>`
+                ).join('');
+
+                categoryDiv.innerHTML = `
+                    <div class="flex justify-between items-center mb-3">
+                        <input type="text" value="${category.name}" class="font-semibold text-lg border-b-2 border-transparent hover:border-gray-300 focus:border-[#2a6aff] outline-none" data-category-name="${index}">
+                        <button type="button" onclick="removeCategory(${index})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">
+                            🗑️ Eliminar Categoría
+                        </button>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">Criterios:</label>
+                        ${criteriaInputs}
+                        <button type="button" onclick="addCriteria(${index})" class="bg-[#ff8500] hover:bg-orange-600 text-white px-3 py-1 rounded text-sm">
+                            ➕ Añadir Criterio
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(categoryDiv);
+            });
+        }
+
+        function addCategoryRow() {
+            categoriesData.push({
+                name: 'Nueva Categoría',
+                criteria: ['Nuevo Criterio']
+            });
+            loadCategoriesEditContainer();
+        }
+
+        function removeCategory(index) {
+            if (confirm('¿Estás seguro de que deseas eliminar esta categoría?')) {
+                categoriesData.splice(index, 1);
+                loadCategoriesEditContainer();
+            }
+        }
+
+        function addCriteria(categoryIndex) {
+            categoriesData[categoryIndex].criteria.push('Nuevo Criterio');
+            loadCategoriesEditContainer();
+        }
+
+        function removeCriteria(categoryIndex, criteriaIndex) {
+            if (categoriesData[categoryIndex].criteria.length > 1) {
+                categoriesData[categoryIndex].criteria.splice(criteriaIndex, 1);
+                loadCategoriesEditContainer();
+            } else {
+                alert('Una categoría debe tener al menos un criterio');
+            }
+        }
+
+        async function saveCategories() {
+            const updatedCategories = [];
+            
+            document.querySelectorAll('[data-category-name]').forEach((input, index) => {
+                const categoryName = input.value;
+                const criteria = [];
+                
+                document.querySelectorAll(`[data-category="${index}"][data-criteria]`).forEach(criteriaInput => {
+                    criteria.push(criteriaInput.value);
+                });
+                
+                updatedCategories.push({ name: categoryName, criteria });
+            });
+
+            try {
+                demoConfig.evaluationTemplate.categories = updatedCategories;
+                categoriesData = [...updatedCategories];
+                
+                closeCategoriesModal();
+                showNotification('✅ Categorías actualizadas correctamente');
+            } catch (error) {
+                console.error('Error guardando categorías:', error);
+                showNotification('❌ Error al guardar las categorías', 'error');
+            }
+        }
+
+        // ===== GENERACIÓN DE REPORTE =====
+
+        async function generateAndDownloadReport() {
+            try {
+                showNotification('📄 Generando reporte...', 'info');
+                
+                const currentScreen = getCurrentVisibleScreen();
+                await ensureDataLoaded();
+                showLoginScreen();
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                const htmlContent = document.documentElement.outerHTML;
+                restoreScreen(currentScreen);
+                downloadHTMLFile(htmlContent, 'reporte_evaluacion_cnci.html');
+                
+                showNotification('✅ Reporte descargado correctamente');
+                
+            } catch (error) {
+                console.error('Error generando reporte:', error);
+                showNotification('❌ Error al generar el reporte', 'error');
+            }
+        }
+
+        function getCurrentVisibleScreen() {
+            if (!loginScreen.classList.contains('hidden')) return 'login';
+            if (!adminPanel.classList.contains('hidden')) return 'admin';
+            if (!dashboard.classList.contains('hidden')) return 'dashboard';
+            return 'login';
+        }
+
+        function showLoginScreen() {
+            loginScreen.classList.remove('hidden');
+            adminPanel.classList.add('hidden');
+            dashboard.classList.add('hidden');
+        }
+
+        function restoreScreen(screenType) {
+            switch (screenType) {
+                case 'admin':
+                    showAdminPanel();
+                    break;
+                case 'dashboard':
+                    showDashboard();
+                    break;
+                default:
+                    showLoginScreen();
+                    break;
+            }
+        }
+
+        async function ensureDataLoaded() {
+            await new Promise(resolve => setTimeout(resolve, 50));
+            updateLoginTextsInDOM();
+        }
+
+        function updateLoginTextsInDOM() {
+            const config = demoConfig.loginTexts;
+            
+            const mainTitleElement = document.querySelector('#loginScreen h1');
+            if (mainTitleElement) {
+                mainTitleElement.textContent = '📊 Evaluación Modular';
+            }
+            
+            const subtitleElement = document.querySelector('#loginScreen h2');
+            if (subtitleElement) {
+                subtitleElement.textContent = config.mainTitle.replace('Evaluación Modular – ', '');
+            }
+            
+            const departmentElement = document.querySelector('#loginScreen p.text-\\[\\#ff8500\\]');
+            if (departmentElement) {
+                departmentElement.textContent = config.subtitle;
+            }
+            
+            const descriptionElement = document.querySelector('#loginScreen p.text-gray-600');
+            if (descriptionElement) {
+                descriptionElement.textContent = '🔍 ' + config.description;
+            }
+        }
+
+        function downloadHTMLFile(htmlContent, filename) {
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+            const downloadLink = document.createElement('a');
+            downloadLink.href = URL.createObjectURL(blob);
+            downloadLink.download = filename;
+            
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            URL.revokeObjectURL(downloadLink.href);
+        }
+
+        // ===== UTILIDADES =====
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg text-white font-medium transition-all transform translate-x-full`;
+            
+            if (type === 'success') {
+                notification.className += ' bg-green-500';
+            } else if (type === 'error') {
+                notification.className += ' bg-red-500';
+            } else if (type === 'info') {
+                notification.className += ' bg-blue-500';
+            } else {
+                notification.className += ' bg-gray-500';
+            }
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+            
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9798078c411220aa',t:'MTc1NjkzMTY4My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
-
