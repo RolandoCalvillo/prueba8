@@ -142,6 +142,13 @@
                         <button id="initFirebaseBtn" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-all">
                             🔧 Inicializar Firebase
                         </button>
+                        <button id="downloadCSVBtn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition-all">
+                            📥 Descargar Plantilla CSV
+                        </button>
+                        <button id="uploadCSVBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-all">
+                            📤 Cargar CSV
+                        </button>
+                        <input type="file" id="csvFileInput" accept=".csv" class="hidden">
                         <button id="clearTableBtn" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg transition-all">
                             🗑️ Vaciar Tabla
                         </button>
@@ -1031,6 +1038,13 @@
             document.getElementById('cancelCategoriesBtn').addEventListener('click', closeCategoriesModal);
             document.getElementById('addCategoryBtn').addEventListener('click', addCategoryRow);
             document.getElementById('saveCategoriesBtn').addEventListener('click', saveCategories);
+
+            // CSV functionality
+            document.getElementById('downloadCSVBtn').addEventListener('click', downloadCSVTemplate);
+            document.getElementById('uploadCSVBtn').addEventListener('click', () => {
+                document.getElementById('csvFileInput').click();
+            });
+            document.getElementById('csvFileInput').addEventListener('change', handleCSVUpload);
         }
 
         // ===== INICIALIZACIÓN AUTOMÁTICA DE FIREBASE =====
@@ -2088,6 +2102,306 @@
             return syncedCategories;
         }
 
+        // ===== FUNCIONES CSV =====
+
+        function downloadCSVTemplate() {
+            try {
+                showNotification('📥 Generando plantilla CSV...', 'info');
+                
+                // Crear headers del CSV
+                const headers = [
+                    'username',
+                    'name', 
+                    'password',
+                    'role',
+                    'generalComments',
+                    'badgeExcellence',
+                    'badgeCommunicator', 
+                    'badgeConsistent',
+                    'workPlanObjectives',
+                    'workPlanResources',
+                    'workPlanAdditionalNotes'
+                ];
+
+                // Añadir headers para cada categoría y sus criterios
+                categoriesData.forEach(category => {
+                    headers.push(`category_${category.name}_score`);
+                    category.criteria.forEach((criteria, index) => {
+                        headers.push(`category_${category.name}_criteria_${index + 1}_name`);
+                        headers.push(`category_${category.name}_criteria_${index + 1}_score`);
+                    });
+                });
+
+                // Crear filas de datos
+                const rows = [headers];
+                
+                allUsers.forEach(user => {
+                    const row = [
+                        user.username || '',
+                        user.name || '',
+                        userCredentials[user.username]?.password || user.password || 'password123',
+                        user.role || 'user',
+                        user.generalComments || '',
+                        user.badges?.excellence ? 'true' : 'false',
+                        user.badges?.communicator ? 'true' : 'false',
+                        user.badges?.consistent ? 'true' : 'false',
+                        user.workPlan?.objectives || '',
+                        user.workPlan?.resources || '',
+                        user.workPlan?.additionalNotes || ''
+                    ];
+
+                    // Añadir datos de categorías
+                    categoriesData.forEach(category => {
+                        const userCategory = user.categories?.[category.name];
+                        row.push(userCategory?.score || 0);
+                        
+                        category.criteria.forEach((templateCriteria, index) => {
+                            const userCriteria = userCategory?.criteria?.[index];
+                            if (typeof userCriteria === 'object' && userCriteria.name && userCriteria.score !== undefined) {
+                                row.push(userCriteria.name);
+                                row.push(userCriteria.score);
+                            } else {
+                                // Compatibilidad con formato anterior
+                                row.push(templateCriteria);
+                                row.push(0);
+                            }
+                        });
+                    });
+
+                    rows.push(row);
+                });
+
+                // Convertir a CSV con codificación UTF-8
+                const csvContent = rows.map(row => 
+                    row.map(field => {
+                        // Escapar comillas y envolver en comillas si contiene comas, saltos de línea o comillas
+                        const stringField = String(field);
+                        if (stringField.includes(',') || stringField.includes('\n') || stringField.includes('"')) {
+                            return '"' + stringField.replace(/"/g, '""') + '"';
+                        }
+                        return stringField;
+                    }).join(',')
+                ).join('\n');
+
+                // Añadir BOM para UTF-8 para mejor compatibilidad con Excel
+                const BOM = '\uFEFF';
+                const csvWithBOM = BOM + csvContent;
+
+                // Descargar archivo
+                const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `plantilla_evaluacion_cnci_${new Date().toISOString().split('T')[0]}.csv`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
+                showNotification('✅ Plantilla CSV descargada correctamente');
+                
+            } catch (error) {
+                console.error('Error generando CSV:', error);
+                showNotification('❌ Error al generar la plantilla CSV', 'error');
+            }
+        }
+
+        async function handleCSVUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                showNotification('❌ Por favor selecciona un archivo CSV válido', 'error');
+                return;
+            }
+
+            try {
+                showNotification('📤 Procesando archivo CSV...', 'info');
+                
+                const text = await readFileAsText(file);
+                const rows = parseCSV(text);
+                
+                if (rows.length < 2) {
+                    showNotification('❌ El archivo CSV debe contener al menos una fila de datos', 'error');
+                    return;
+                }
+
+                const headers = rows[0];
+                const dataRows = rows.slice(1);
+                
+                // Validar headers básicos
+                const requiredHeaders = ['username', 'name', 'password'];
+                const missingHeaders = requiredHeaders.filter(header => !headers.includes(header));
+                
+                if (missingHeaders.length > 0) {
+                    showNotification(`❌ Faltan columnas requeridas: ${missingHeaders.join(', ')}`, 'error');
+                    return;
+                }
+
+                let processedUsers = 0;
+                let errors = [];
+
+                for (const row of dataRows) {
+                    try {
+                        if (row.length !== headers.length) {
+                            errors.push(`Fila con número incorrecto de columnas: ${row.join(',').substring(0, 50)}...`);
+                            continue;
+                        }
+
+                        const userData = {};
+                        headers.forEach((header, index) => {
+                            userData[header] = row[index];
+                        });
+
+                        // Validar datos básicos
+                        if (!userData.username || !userData.name) {
+                            errors.push(`Usuario sin nombre o username: ${userData.username || 'N/A'}`);
+                            continue;
+                        }
+
+                        // Procesar usuario
+                        await processUserFromCSV(userData, headers);
+                        processedUsers++;
+                        
+                    } catch (error) {
+                        errors.push(`Error procesando usuario ${row[0] || 'desconocido'}: ${error.message}`);
+                    }
+                }
+
+                // Recargar tabla y mostrar resultados
+                await loadUsersTable();
+                
+                if (errors.length > 0) {
+                    console.warn('Errores durante la carga:', errors);
+                    showNotification(`⚠️ ${processedUsers} usuarios procesados. ${errors.length} errores encontrados (ver consola)`, 'info');
+                } else {
+                    showNotification(`✅ ${processedUsers} usuarios cargados correctamente desde CSV`);
+                }
+
+            } catch (error) {
+                console.error('Error procesando CSV:', error);
+                showNotification('❌ Error al procesar el archivo CSV', 'error');
+            } finally {
+                // Limpiar input file
+                event.target.value = '';
+            }
+        }
+
+        function readFileAsText(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = (e) => reject(new Error('Error leyendo archivo'));
+                reader.readAsText(file, 'UTF-8');
+            });
+        }
+
+        function parseCSV(text) {
+            const rows = [];
+            const lines = text.split('\n');
+            
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+                
+                const row = [];
+                let current = '';
+                let inQuotes = false;
+                
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    const nextChar = line[i + 1];
+                    
+                    if (char === '"') {
+                        if (inQuotes && nextChar === '"') {
+                            // Comilla escapada
+                            current += '"';
+                            i++; // Saltar la siguiente comilla
+                        } else {
+                            // Cambiar estado de comillas
+                            inQuotes = !inQuotes;
+                        }
+                    } else if (char === ',' && !inQuotes) {
+                        // Separador de campo
+                        row.push(current);
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                
+                // Añadir último campo
+                row.push(current);
+                rows.push(row);
+            }
+            
+            return rows;
+        }
+
+        async function processUserFromCSV(userData, headers) {
+            const user = {
+                username: userData.username.trim(),
+                name: userData.name.trim(),
+                role: userData.role || 'user',
+                password: userData.password || 'password123',
+                generalComments: userData.generalComments || '',
+                badges: {
+                    excellence: userData.badgeExcellence === 'true',
+                    communicator: userData.badgeCommunicator === 'true',
+                    consistent: userData.badgeConsistent === 'true'
+                },
+                workPlan: {
+                    objectives: userData.workPlanObjectives || '',
+                    resources: userData.workPlanResources || '',
+                    additionalNotes: userData.workPlanAdditionalNotes || ''
+                },
+                categories: {}
+            };
+
+            // Procesar categorías desde CSV
+            categoriesData.forEach(category => {
+                const categoryScoreKey = `category_${category.name}_score`;
+                const categoryScore = parseFloat(userData[categoryScoreKey]) || 0;
+                
+                const criteria = [];
+                category.criteria.forEach((templateCriteria, index) => {
+                    const criteriaNameKey = `category_${category.name}_criteria_${index + 1}_name`;
+                    const criteriaScoreKey = `category_${category.name}_criteria_${index + 1}_score`;
+                    
+                    criteria.push({
+                        name: userData[criteriaNameKey] || templateCriteria,
+                        score: parseFloat(userData[criteriaScoreKey]) || 0
+                    });
+                });
+
+                user.categories[category.name] = {
+                    score: categoryScore,
+                    criteria: criteria
+                };
+            });
+
+            // Actualizar credenciales
+            userCredentials[user.username] = {
+                password: user.password,
+                role: user.role
+            };
+
+            // Guardar usuario
+            if (isFirebaseInitialized) {
+                const { setDoc, doc } = window.firebaseFunctions;
+                await setDoc(doc(window.firebaseDb, 'users', user.username), user);
+                await setDoc(doc(window.firebaseDb, 'config', 'userCredentials'), userCredentials);
+            } else {
+                // Modo local
+                const existingUserIndex = allUsers.findIndex(u => u.username === user.username);
+                if (existingUserIndex !== -1) {
+                    allUsers[existingUserIndex] = user;
+                } else {
+                    allUsers.push(user);
+                }
+            }
+        }
+
         // ===== GENERACIÓN DE REPORTE =====
 
         async function generateAndDownloadReport() {
@@ -2194,5 +2508,5 @@
         window.addCriteria = addCriteria;
         window.removeCriteria = removeCriteria;
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9798cb60b1b520aa',t:'MTc1NjkzOTcwNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9798d604a76620aa',t:'MTc1Njk0MDE0MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
