@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
         import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, where } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
         import { getAnalytics } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js';
         
@@ -32,6 +32,23 @@
         window.firebaseApp = app;
         window.firebaseAuth = auth;
         window.firebaseDb = db;
+        
+        // Firebase functions
+        window.firebaseFunctions = {
+            signInWithEmailAndPassword,
+            createUserWithEmailAndPassword,
+            signOut,
+            onAuthStateChanged,
+            collection,
+            doc,
+            getDoc,
+            getDocs,
+            setDoc,
+            updateDoc,
+            deleteDoc,
+            query,
+            where
+        };
     </script>
     <style>
         .gradient-bg {
@@ -58,18 +75,40 @@
             from { transform: translateX(-100%); }
             to { transform: translateX(0); }
         }
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2a6aff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="fixed inset-0 bg-white flex items-center justify-center z-50">
+        <div class="text-center">
+            <div class="loading-spinner mx-auto mb-4"></div>
+            <h2 class="text-xl font-semibold text-gray-800 mb-2">🔧 Configurando Firebase</h2>
+            <p class="text-gray-600">Inicializando base de datos...</p>
+            <div id="initProgress" class="mt-4 text-sm text-[#2a6aff]">Conectando...</div>
+        </div>
+    </div>
+
     <!-- Pantalla de Login -->
-    <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md fade-in">
             <div class="text-center mb-8">
                 <img src="https://i.postimg.cc/KzxV7m0Z/CNCI-VIRTUAL-LOGO.jpg" alt="Logo Universidad Virtual CNCI" class="mx-auto mb-6 h-20 object-contain">
-                <h1 class="text-2xl font-bold text-gray-800 mb-2">📊 Evaluación Modular</h1>
-                <h2 class="text-lg text-[#2a6aff] font-semibold mb-1">Universidad Virtual CNCI</h2>
-                <p class="text-[#ff8500] font-medium mb-4">Departamento de Servicios Estudiantiles</p>
-                <p class="text-gray-600 text-sm">🔍 Consulta tu desempeño del módulo de manera detallada ingresando tu usuario</p>
+                <h1 id="loginTitle" class="text-2xl font-bold text-gray-800 mb-2">📊 Evaluación Modular</h1>
+                <h2 id="loginSubtitle" class="text-lg text-[#2a6aff] font-semibold mb-1">Universidad Virtual CNCI</h2>
+                <p id="loginDepartment" class="text-[#ff8500] font-medium mb-4">Departamento de Servicios Estudiantiles</p>
+                <p id="loginDescription" class="text-gray-600 text-sm">🔍 Consulta tu desempeño del módulo de manera detallada ingresando tu usuario</p>
             </div>
             
             <form id="loginForm" class="space-y-4">
@@ -100,12 +139,23 @@
                 <div class="flex justify-between items-center mb-8">
                     <h1 class="text-3xl font-bold text-gray-800">👨‍💼 Panel de Administrador</h1>
                     <div class="space-x-4">
+                        <button id="initFirebaseBtn" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-all">
+                            🔧 Inicializar Firebase
+                        </button>
                         <button id="clearTableBtn" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg transition-all">
                             🗑️ Vaciar Tabla
                         </button>
                         <button id="adminLogout" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-all">
                             🚪 Cerrar Sesión
                         </button>
+                    </div>
+                </div>
+
+                <!-- Estado de Firebase -->
+                <div id="firebaseStatus" class="mb-8 p-4 rounded-lg border">
+                    <h3 class="font-semibold mb-2">🔥 Estado de Firebase</h3>
+                    <div id="statusContent" class="text-sm text-gray-600">
+                        Verificando conexión...
                     </div>
                 </div>
 
@@ -119,11 +169,15 @@
                         </div>
                         <div>
                             <label class="block text-gray-700 text-sm font-medium mb-2">Subtítulo</label>
-                            <input type="text" id="subtitle" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]" value="Departamento de Servicios Estudiantiles">
+                            <input type="text" id="subtitle" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]" value="Universidad Virtual CNCI">
                         </div>
-                        <div class="md:col-span-2">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-medium mb-2">Departamento</label>
+                            <input type="text" id="department" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]" value="Departamento de Servicios Estudiantiles">
+                        </div>
+                        <div>
                             <label class="block text-gray-700 text-sm font-medium mb-2">Descripción</label>
-                            <textarea id="description" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]">Consulta tu desempeño del módulo de manera detallada ingresando tu usuario</textarea>
+                            <input type="text" id="description" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]" value="Consulta tu desempeño del módulo de manera detallada ingresando tu usuario">
                         </div>
                         <div class="md:col-span-2">
                             <button id="saveLoginTexts" class="bg-[#2a6aff] hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-all">
@@ -179,7 +233,7 @@
         </div>
     </div>
 
-    <!-- Modales -->
+    <!-- Modales (mantienen la misma estructura) -->
     <!-- Modal Añadir/Editar Usuario -->
     <div id="userModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
@@ -427,91 +481,44 @@
         let allUsers = [];
         let currentEditingUser = null;
         let categoriesData = [];
+        let isFirebaseInitialized = false;
 
-        // Datos de demostración con nueva estructura de evaluación
-        const demoUsers = {
-            'admin': {
-                password: 'admin123',
-                role: 'admin',
-                name: 'Administrador CNCI',
-                username: 'admin'
-            },
-            'usuario01': {
-                password: 'password123',
-                role: 'user',
-                id: 'usuario01',
-                name: 'María González Pérez',
-                username: 'usuario01',
-                generalScore: 87,
-                generalComments: 'Excelente desempeño en retención y reincorporación. Se destaca por su seguimiento oportuno a estudiantes morosos y uso efectivo del CRM. Áreas de oportunidad: mejorar tiempo de respuesta en WhatsApp.',
-                categories: {
-                    'RETENCIÓN': { 
-                        score: 90, 
-                        criteria: ['Seguimiento a población morosa', 'Total de bajas de alumnos con morosidad', 'Uso adecuado y oportuno de la columna de retención de CRM', 'Retención y bajas pagadas'] 
-                    },
-                    'REINCORPORACIÓN': { 
-                        score: 85, 
-                        criteria: ['Bajas por no pago', 'Búsqueda y difusión de promociones', 'Registro y seguimiento', 'Cierre de prospectos', 'Total de reingresos'] 
-                    },
-                    'PROCESOS': { 
-                        score: 88, 
-                        criteria: ['Búsqueda de alumnos por estatus y perfil: semana 1 a la semana 4', 'Procesos académicos', 'Trámites escolares'] 
-                    },
-                    'LLAMADA': { 
-                        score: 92, 
-                        criteria: ['Se presenta con su nombre e identificación de la Universidad', 'Maneja motivo de la llamada de manera adecuada'] 
-                    },
-                    'WHATSAPP': { 
-                        score: 83, 
-                        criteria: ['Emplea redacción adecuada', 'Crea bocetos', 'Responde todos los mensajes', 'Contesta preguntas en un rango de 12 horas o menos', 'Brinda soluciones pertinentes', 'Propone llamada para una mejor explicación', 'Es empático (a)'] 
-                    },
-                    'CORREO ELECTRÓNICO': { 
-                        score: 89, 
-                        criteria: ['Emplea redacción adecuada', 'Crea bocetos previos a enviar', 'Responde todos los mensajes', 'Contesta preguntas en un rango de 12 horas o menos', 'Atiende en tiempo la asignación de correos institucionales', 'Brinda soluciones pertinentes', 'Propone llamada para una mejor explicación', 'Es empático (a)', 'Mantiene control sobre sus emociones en casos difíciles'] 
-                    },
-                    'VIVA ENGAGE': { 
-                        score: 86, 
-                        criteria: ['La reunión previa a la publicación se realiza de forma exitosa', 'Se nota una excelente organización y trabajo en equipo', 'Se utilizan imágenes, videos o elementos gráficos llamativos y bien diseñados', 'Se publica en la fecha establecida sin retrasos'] 
-                    },
-                    'ACTIVIDADES ADMINISTRATIVAS': { 
-                        score: 91, 
-                        criteria: ['Asigna y actualiza perfiles', 'Especifica a través de que medio abordó al alumno', 'Registra en tiempo (diario) sus actividades en el reporte de seguimiento CRM', 'Organiza sus tiempos para cumplir con el % mínimo (90%) de contactación', 'Logra el % mínimo de contactación'] 
-                    }
-                }
-            },
-            'usuario02': {
-                password: 'password123',
-                role: 'user',
-                id: 'usuario02',
-                name: 'Carlos Rodríguez López',
-                username: 'usuario02',
-                generalScore: 92,
-                generalComments: 'Muy buen desempeño general. Excelente manejo de procesos académicos y comunicación con estudiantes.',
-                categories: {
-                    'RETENCIÓN': { score: 95, criteria: ['Seguimiento a población morosa', 'Total de bajas de alumnos con morosidad', 'Uso adecuado y oportuno de la columna de retención de CRM', 'Retención y bajas pagadas'] },
-                    'REINCORPORACIÓN': { score: 90, criteria: ['Bajas por no pago', 'Búsqueda y difusión de promociones', 'Registro y seguimiento', 'Cierre de prospectos', 'Total de reingresos'] },
-                    'PROCESOS': { score: 91, criteria: ['Búsqueda de alumnos por estatus y perfil: semana 1 a la semana 4', 'Procesos académicos', 'Trámites escolares'] },
-                    'LLAMADA': { score: 94, criteria: ['Se presenta con su nombre e identificación de la Universidad', 'Maneja motivo de la llamada de manera adecuada'] },
-                    'WHATSAPP': { score: 88, criteria: ['Emplea redacción adecuada', 'Crea bocetos', 'Responde todos los mensajes', 'Contesta preguntas en un rango de 12 horas o menos', 'Brinda soluciones pertinentes', 'Propone llamada para una mejor explicación', 'Es empático (a)'] },
-                    'CORREO ELECTRÓNICO': { score: 93, criteria: ['Emplea redacción adecuada', 'Crea bocetos previos a enviar', 'Responde todos los mensajes', 'Contesta preguntas en un rango de 12 horas o menos', 'Atiende en tiempo la asignación de correos institucionales', 'Brinda soluciones pertinentes', 'Propone llamada para una mejor explicación', 'Es empático (a)', 'Mantiene control sobre sus emociones en casos difíciles'] },
-                    'VIVA ENGAGE': { score: 89, criteria: ['La reunión previa a la publicación se realiza de forma exitosa', 'Se nota una excelente organización y trabajo en equipo', 'Se utilizan imágenes, videos o elementos gráficos llamativos y bien diseñados', 'Se publica en la fecha establecida sin retrasos'] },
-                    'ACTIVIDADES ADMINISTRATIVAS': { score: 96, criteria: ['Asigna y actualiza perfiles', 'Especifica a través de que medio abordó al alumno', 'Registra en tiempo (diario) sus actividades en el reporte de seguimiento CRM', 'Organiza sus tiempos para cumplir con el % mínimo (90%) de contactación', 'Logra el % mínimo de contactación'] }
-                }
-            }
+        // Mapeo de nicknames a emails
+        const nicknameToEmail = {
+            'admin': 'admin@cnci.edu.mx',
+            'usuario01': 'usuario01@cnci.edu.mx',
+            'usuario02': 'usuario02@cnci.edu.mx',
+            'usuario03': 'usuario03@cnci.edu.mx',
+            'usuario04': 'usuario04@cnci.edu.mx',
+            'usuario05': 'usuario05@cnci.edu.mx',
+            'usuario06': 'usuario06@cnci.edu.mx',
+            'usuario07': 'usuario07@cnci.edu.mx',
+            'usuario08': 'usuario08@cnci.edu.mx',
+            'usuario09': 'usuario09@cnci.edu.mx',
+            'usuario10': 'usuario10@cnci.edu.mx',
+            'usuario11': 'usuario11@cnci.edu.mx',
+            'usuario12': 'usuario12@cnci.edu.mx',
+            'usuario13': 'usuario13@cnci.edu.mx',
+            'usuario14': 'usuario14@cnci.edu.mx',
+            'usuario15': 'usuario15@cnci.edu.mx',
+            'usuario16': 'usuario16@cnci.edu.mx',
+            'usuario17': 'usuario17@cnci.edu.mx',
+            'usuario18': 'usuario18@cnci.edu.mx'
         };
 
-        // Configuración demo actualizada
-        const demoConfig = {
+        // Datos por defecto para inicialización
+        const defaultData = {
             loginTexts: {
-                mainTitle: 'Evaluación Modular – Universidad Virtual CNCI',
-                subtitle: 'Departamento de Servicios Estudiantiles',
+                mainTitle: 'Evaluación Modular',
+                subtitle: 'Universidad Virtual CNCI',
+                department: 'Departamento de Servicios Estudiantiles',
                 description: 'Consulta tu desempeño del módulo de manera detallada ingresando tu usuario'
             },
             evaluationTemplate: {
                 categories: [
                     {
                         name: 'RETENCIÓN',
-                        criteria: ['Seguimiento a población morosa', 'Total de bajas de alumnos con morosidad', 'Uso adecuado y oportuno de la columna de retención de CRM, considerando movimientos del alumno para aplicar estrategias para su permanencia', 'Retención y bajas pagadas']
+                        criteria: ['Seguimiento a población morosa', 'Total de bajas de alumnos con morosidad', 'Uso adecuado y oportuno de la columna de retención de CRM', 'Retención y bajas pagadas']
                     },
                     {
                         name: 'REINCORPORACIÓN',
@@ -519,7 +526,7 @@
                     },
                     {
                         name: 'PROCESOS',
-                        criteria: ['Búsqueda de alumnos por estatus y perfil: semana 1 a la semana 4', 'Procesos académicos: Cambio de carrera y/o programa, Cambio de modelo educativo, Cambio de módulo, Exámenes extraordinarios, Materias adicionales, Programa de inglés y Reducción de materias', 'Trámites escolares: Servicio Social, Solicitud de constancia y Kardex, Titulación y Trámite de credencial']
+                        criteria: ['Búsqueda de alumnos por estatus y perfil: semana 1 a la semana 4', 'Procesos académicos', 'Trámites escolares']
                     },
                     {
                         name: 'LLAMADA',
@@ -531,21 +538,58 @@
                     },
                     {
                         name: 'CORREO ELECTRÓNICO',
-                        criteria: ['Emplea redacción adecuada', 'Crea bocetos previos a enviar', 'Responde todos los mensajes', 'Contesta preguntas en un rango de 12 horas o menos', 'Atiende en tiempo la asignación de correos institucionales, agregando su firma al momento de brindar respuesta a los alumnos', 'Brinda soluciones pertinentes', 'Propone llamada para una mejor explicación', 'Es empático (a)', 'Mantiene control sobre sus emociones en casos difíciles']
+                        criteria: ['Emplea redacción adecuada', 'Crea bocetos previos a enviar', 'Responde todos los mensajes', 'Contesta preguntas en un rango de 12 horas o menos', 'Atiende en tiempo la asignación de correos institucionales', 'Brinda soluciones pertinentes', 'Propone llamada para una mejor explicación', 'Es empático (a)', 'Mantiene control sobre sus emociones en casos difíciles']
                     },
                     {
                         name: 'VIVA ENGAGE',
-                        criteria: ['La reunión previa a la publicación se realiza de forma exitosa (se concreta tema, minuta y solicitud de material)', 'Se nota una excelente organización y trabajo en equipo', 'Se utilizan imágenes, videos o elementos gráficos llamativos y bien diseñados', 'Se publica en la fecha establecida sin retrasos']
+                        criteria: ['La reunión previa a la publicación se realiza de forma exitosa', 'Se nota una excelente organización y trabajo en equipo', 'Se utilizan imágenes, videos o elementos gráficos llamativos y bien diseñados', 'Se publica en la fecha establecida sin retrasos']
                     },
                     {
                         name: 'ACTIVIDADES ADMINISTRATIVAS',
                         criteria: ['Asigna y actualiza perfiles', 'Especifica a través de que medio abordó al alumno', 'Registra en tiempo (diario) sus actividades en el reporte de seguimiento CRM', 'Organiza sus tiempos para cumplir con el % mínimo (90%) de contactación', 'Logra el % mínimo de contactación']
                     }
                 ]
-            }
+            },
+            defaultUsers: [
+                {
+                    username: 'usuario01',
+                    name: 'María González Pérez',
+                    role: 'user',
+                    generalScore: 87,
+                    generalComments: 'Excelente desempeño en retención y reincorporación. Se destaca por su seguimiento oportuno a estudiantes morosos y uso efectivo del CRM.',
+                    categories: {
+                        'RETENCIÓN': { score: 90, criteria: ['Seguimiento a población morosa', 'Total de bajas de alumnos con morosidad', 'Uso adecuado y oportuno de la columna de retención de CRM', 'Retención y bajas pagadas'] },
+                        'REINCORPORACIÓN': { score: 85, criteria: ['Bajas por no pago', 'Búsqueda y difusión de promociones', 'Registro y seguimiento', 'Cierre de prospectos', 'Total de reingresos'] },
+                        'PROCESOS': { score: 88, criteria: ['Búsqueda de alumnos por estatus y perfil: semana 1 a la semana 4', 'Procesos académicos', 'Trámites escolares'] },
+                        'LLAMADA': { score: 92, criteria: ['Se presenta con su nombre e identificación de la Universidad', 'Maneja motivo de la llamada de manera adecuada'] },
+                        'WHATSAPP': { score: 83, criteria: ['Emplea redacción adecuada', 'Crea bocetos', 'Responde todos los mensajes', 'Contesta preguntas en un rango de 12 horas o menos', 'Brinda soluciones pertinentes', 'Propone llamada para una mejor explicación', 'Es empático (a)'] },
+                        'CORREO ELECTRÓNICO': { score: 89, criteria: ['Emplea redacción adecuada', 'Crea bocetos previos a enviar', 'Responde todos los mensajes', 'Contesta preguntas en un rango de 12 horas o menos', 'Atiende en tiempo la asignación de correos institucionales', 'Brinda soluciones pertinentes', 'Propone llamada para una mejor explicación', 'Es empático (a)', 'Mantiene control sobre sus emociones en casos difíciles'] },
+                        'VIVA ENGAGE': { score: 86, criteria: ['La reunión previa a la publicación se realiza de forma exitosa', 'Se nota una excelente organización y trabajo en equipo', 'Se utilizan imágenes, videos o elementos gráficos llamativos y bien diseñados', 'Se publica en la fecha establecida sin retrasos'] },
+                        'ACTIVIDADES ADMINISTRATIVAS': { score: 91, criteria: ['Asigna y actualiza perfiles', 'Especifica a través de que medio abordó al alumno', 'Registra en tiempo (diario) sus actividades en el reporte de seguimiento CRM', 'Organiza sus tiempos para cumplir con el % mínimo (90%) de contactación', 'Logra el % mínimo de contactación'] }
+                    }
+                },
+                {
+                    username: 'usuario02',
+                    name: 'Carlos Rodríguez López',
+                    role: 'user',
+                    generalScore: 92,
+                    generalComments: 'Muy buen desempeño general. Excelente manejo de procesos académicos y comunicación con estudiantes.',
+                    categories: {
+                        'RETENCIÓN': { score: 95, criteria: ['Seguimiento a población morosa', 'Total de bajas de alumnos con morosidad', 'Uso adecuado y oportuno de la columna de retención de CRM', 'Retención y bajas pagadas'] },
+                        'REINCORPORACIÓN': { score: 90, criteria: ['Bajas por no pago', 'Búsqueda y difusión de promociones', 'Registro y seguimiento', 'Cierre de prospectos', 'Total de reingresos'] },
+                        'PROCESOS': { score: 91, criteria: ['Búsqueda de alumnos por estatus y perfil: semana 1 a la semana 4', 'Procesos académicos', 'Trámites escolares'] },
+                        'LLAMADA': { score: 94, criteria: ['Se presenta con su nombre e identificación de la Universidad', 'Maneja motivo de la llamada de manera adecuada'] },
+                        'WHATSAPP': { score: 88, criteria: ['Emplea redacción adecuada', 'Crea bocetos', 'Responde todos los mensajes', 'Contesta preguntas en un rango de 12 horas o menos', 'Brinda soluciones pertinentes', 'Propone llamada para una mejor explicación', 'Es empático (a)'] },
+                        'CORREO ELECTRÓNICO': { score: 93, criteria: ['Emplea redacción adecuada', 'Crea bocetos previos a enviar', 'Responde todos los mensajes', 'Contesta preguntas en un rango de 12 horas o menos', 'Atiende en tiempo la asignación de correos institucionales', 'Brinda soluciones pertinentes', 'Propone llamada para una mejor explicación', 'Es empático (a)', 'Mantiene control sobre sus emociones en casos difíciles'] },
+                        'VIVA ENGAGE': { score: 89, criteria: ['La reunión previa a la publicación se realiza de forma exitosa', 'Se nota una excelente organización y trabajo en equipo', 'Se utilizan imágenes, videos o elementos gráficos llamativos y bien diseñados', 'Se publica en la fecha establecida sin retrasos'] },
+                        'ACTIVIDADES ADMINISTRATIVAS': { score: 96, criteria: ['Asigna y actualiza perfiles', 'Especifica a través de que medio abordó al alumno', 'Registra en tiempo (diario) sus actividades en el reporte de seguimiento CRM', 'Organiza sus tiempos para cumplir con el % mínimo (90%) de contactación', 'Logra el % mínimo de contactación'] }
+                    }
+                }
+            ]
         };
 
         // Elementos del DOM
+        const loadingScreen = document.getElementById('loadingScreen');
         const loginScreen = document.getElementById('loginScreen');
         const adminPanel = document.getElementById('adminPanel');
         const dashboard = document.getElementById('dashboard');
@@ -554,6 +598,110 @@
 
         // Event Listeners
         document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+
+        // ===== INICIALIZACIÓN DE LA APLICACIÓN =====
+
+        async function initializeApp() {
+            try {
+                updateInitProgress('Verificando Firebase...');
+                await checkFirebaseConnection();
+                
+                updateInitProgress('Cargando configuración...');
+                await loadConfiguration();
+                
+                updateInitProgress('Configurando eventos...');
+                setupEventListeners();
+                
+                updateInitProgress('¡Listo!');
+                
+                setTimeout(() => {
+                    loadingScreen.classList.add('hidden');
+                    loginScreen.classList.remove('hidden');
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Error inicializando aplicación:', error);
+                updateInitProgress('Error de conexión. Usando modo offline...');
+                
+                setTimeout(() => {
+                    loadingScreen.classList.add('hidden');
+                    loginScreen.classList.remove('hidden');
+                }, 2000);
+            }
+        }
+
+        function updateInitProgress(message) {
+            document.getElementById('initProgress').textContent = message;
+        }
+
+        async function checkFirebaseConnection() {
+            try {
+                const { getDoc, doc } = window.firebaseFunctions;
+                const testDoc = await getDoc(doc(window.firebaseDb, 'test', 'connection'));
+                isFirebaseInitialized = true;
+                updateFirebaseStatus('🟢 Conectado', 'text-green-600');
+            } catch (error) {
+                console.log('Firebase no inicializado, usando datos locales');
+                isFirebaseInitialized = false;
+                updateFirebaseStatus('🟡 Modo Local', 'text-yellow-600');
+            }
+        }
+
+        function updateFirebaseStatus(message, className) {
+            const statusElement = document.getElementById('statusContent');
+            if (statusElement) {
+                statusElement.textContent = message;
+                statusElement.className = `text-sm ${className}`;
+            }
+        }
+
+        async function loadConfiguration() {
+            if (isFirebaseInitialized) {
+                try {
+                    await loadConfigFromFirebase();
+                } catch (error) {
+                    console.log('Usando configuración por defecto');
+                    loadDefaultConfiguration();
+                }
+            } else {
+                loadDefaultConfiguration();
+            }
+        }
+
+        async function loadConfigFromFirebase() {
+            const { getDoc, doc } = window.firebaseFunctions;
+            
+            // Cargar textos de login
+            const loginTextsDoc = await getDoc(doc(window.firebaseDb, 'config', 'loginTexts'));
+            if (loginTextsDoc.exists()) {
+                const loginTexts = loginTextsDoc.data();
+                updateLoginTexts(loginTexts);
+            }
+            
+            // Cargar template de evaluación
+            const templateDoc = await getDoc(doc(window.firebaseDb, 'config', 'evaluationTemplate'));
+            if (templateDoc.exists()) {
+                evaluationTemplate = templateDoc.data();
+                categoriesData = evaluationTemplate.categories || [];
+            }
+        }
+
+        function loadDefaultConfiguration() {
+            updateLoginTexts(defaultData.loginTexts);
+            evaluationTemplate = defaultData.evaluationTemplate;
+            categoriesData = defaultData.evaluationTemplate.categories;
+        }
+
+        function updateLoginTexts(texts) {
+            document.getElementById('loginTitle').textContent = `📊 ${texts.mainTitle}`;
+            document.getElementById('loginSubtitle').textContent = texts.subtitle;
+            document.getElementById('loginDepartment').textContent = texts.department;
+            document.getElementById('loginDescription').textContent = `🔍 ${texts.description}`;
+        }
+
+        function setupEventListeners() {
             // Manejar envío del formulario de login
             loginForm.addEventListener('submit', handleLogin);
             
@@ -580,12 +728,12 @@
             
             // Download Report Event Listener
             document.getElementById('downloadReportBtn').addEventListener('click', generateAndDownloadReport);
-
-            // Inicializar datos
-            loadCategoriesData();
-        });
+        }
 
         function setupAdminEventListeners() {
+            // Inicializar Firebase
+            document.getElementById('initFirebaseBtn').addEventListener('click', initializeFirebaseData);
+
             // Guardar textos de login
             document.getElementById('saveLoginTexts').addEventListener('click', saveLoginTexts);
 
@@ -615,31 +763,159 @@
             document.getElementById('saveCategoriesBtn').addEventListener('click', saveCategories);
         }
 
-        // Función de login actualizada para usar nicknames
+        // ===== INICIALIZACIÓN AUTOMÁTICA DE FIREBASE =====
+
+        async function initializeFirebaseData() {
+            try {
+                showNotification('🔧 Inicializando Firebase...', 'info');
+                
+                // Crear usuarios en Authentication
+                await createDefaultUsers();
+                
+                // Crear configuración en Firestore
+                await createDefaultConfig();
+                
+                // Crear usuarios de ejemplo en Firestore
+                await createDefaultUserData();
+                
+                isFirebaseInitialized = true;
+                updateFirebaseStatus('🟢 Inicializado Correctamente', 'text-green-600');
+                showNotification('✅ Firebase inicializado correctamente');
+                
+                // Recargar datos
+                await loadConfiguration();
+                loadUsersTable();
+                
+            } catch (error) {
+                console.error('Error inicializando Firebase:', error);
+                showNotification('❌ Error inicializando Firebase: ' + error.message, 'error');
+            }
+        }
+
+        async function createDefaultUsers() {
+            const { createUserWithEmailAndPassword } = window.firebaseFunctions;
+            const auth = window.firebaseAuth;
+            
+            const usersToCreate = [
+                { email: 'admin@cnci.edu.mx', password: 'admin123' },
+                { email: 'usuario01@cnci.edu.mx', password: 'password123' },
+                { email: 'usuario02@cnci.edu.mx', password: 'password123' }
+            ];
+            
+            for (const user of usersToCreate) {
+                try {
+                    await createUserWithEmailAndPassword(auth, user.email, user.password);
+                    console.log(`Usuario creado: ${user.email}`);
+                } catch (error) {
+                    if (error.code !== 'auth/email-already-in-use') {
+                        console.error(`Error creando usuario ${user.email}:`, error);
+                    }
+                }
+            }
+        }
+
+        async function createDefaultConfig() {
+            const { setDoc, doc } = window.firebaseFunctions;
+            
+            // Guardar textos de login
+            await setDoc(doc(window.firebaseDb, 'config', 'loginTexts'), defaultData.loginTexts);
+            
+            // Guardar template de evaluación
+            await setDoc(doc(window.firebaseDb, 'config', 'evaluationTemplate'), defaultData.evaluationTemplate);
+        }
+
+        async function createDefaultUserData() {
+            const { setDoc, doc } = window.firebaseFunctions;
+            
+            for (const user of defaultData.defaultUsers) {
+                await setDoc(doc(window.firebaseDb, 'users', user.username), user);
+            }
+        }
+
+        // ===== FUNCIONES DE LOGIN =====
+
         async function handleLogin(e) {
             e.preventDefault();
             
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             
-            // Buscar usuario por nickname
-            const user = demoUsers[username];
-            
-            if (user && user.password === password) {
-                currentUser = user;
+            try {
+                const email = nicknameToEmail[username];
+                if (!email) {
+                    throw new Error('Usuario no encontrado');
+                }
+                
+                if (isFirebaseInitialized) {
+                    // Login con Firebase
+                    const { signInWithEmailAndPassword } = window.firebaseFunctions;
+                    const userCredential = await signInWithEmailAndPassword(window.firebaseAuth, email, password);
+                    
+                    // Cargar datos del usuario desde Firestore
+                    await loadUserFromFirestore(username);
+                } else {
+                    // Login local (fallback)
+                    if ((username === 'admin' && password === 'admin123') || 
+                        (username.startsWith('usuario') && password === 'password123')) {
+                        await loadUserFromLocal(username);
+                    } else {
+                        throw new Error('Credenciales incorrectas');
+                    }
+                }
+                
                 loginError.classList.add('hidden');
                 
-                if (user.role === 'admin') {
+                if (currentUser.role === 'admin') {
                     showAdminPanel();
                 } else {
                     showDashboard();
                 }
-            } else {
+                
+            } catch (error) {
+                console.error('Error en login:', error);
                 loginError.classList.remove('hidden');
             }
         }
 
-        // Mostrar panel de administrador
+        async function loadUserFromFirestore(username) {
+            const { getDoc, doc } = window.firebaseFunctions;
+            
+            if (username === 'admin') {
+                currentUser = {
+                    username: 'admin',
+                    name: 'Administrador CNCI',
+                    role: 'admin'
+                };
+            } else {
+                const userDoc = await getDoc(doc(window.firebaseDb, 'users', username));
+                if (userDoc.exists()) {
+                    currentUser = userDoc.data();
+                } else {
+                    throw new Error('Datos de usuario no encontrados');
+                }
+            }
+        }
+
+        async function loadUserFromLocal(username) {
+            if (username === 'admin') {
+                currentUser = {
+                    username: 'admin',
+                    name: 'Administrador CNCI',
+                    role: 'admin'
+                };
+            } else {
+                // Buscar en datos por defecto
+                const userData = defaultData.defaultUsers.find(u => u.username === username);
+                if (userData) {
+                    currentUser = userData;
+                } else {
+                    throw new Error('Usuario no encontrado');
+                }
+            }
+        }
+
+        // ===== FUNCIONES DE NAVEGACIÓN =====
+
         function showAdminPanel() {
             loginScreen.classList.add('hidden');
             dashboard.classList.add('hidden');
@@ -648,7 +924,6 @@
             loadAdminData();
         }
 
-        // Mostrar dashboard
         function showDashboard() {
             loginScreen.classList.add('hidden');
             adminPanel.classList.add('hidden');
@@ -657,7 +932,24 @@
             loadUserData();
         }
 
-        // Cargar datos del usuario
+        function logout() {
+            if (isFirebaseInitialized) {
+                const { signOut } = window.firebaseFunctions;
+                signOut(window.firebaseAuth);
+            }
+            
+            currentUser = null;
+            loginScreen.classList.remove('hidden');
+            adminPanel.classList.add('hidden');
+            dashboard.classList.add('hidden');
+            
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            loginError.classList.add('hidden');
+        }
+
+        // ===== FUNCIONES DEL DASHBOARD =====
+
         function loadUserData() {
             if (!currentUser) return;
             
@@ -668,7 +960,6 @@
             loadEvaluationCategories();
         }
 
-        // Cargar categorías de evaluación
         function loadEvaluationCategories() {
             const container = document.getElementById('evaluationCategories');
             container.innerHTML = '';
@@ -707,7 +998,6 @@
             });
         }
 
-        // Cambiar pestañas
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.add('hidden');
@@ -725,41 +1015,52 @@
             activeButton.classList.remove('text-gray-600');
         }
 
-        // Cerrar sesión
-        function logout() {
-            currentUser = null;
-            loginScreen.classList.remove('hidden');
-            adminPanel.classList.add('hidden');
-            dashboard.classList.add('hidden');
-            
-            document.getElementById('username').value = '';
-            document.getElementById('password').value = '';
-            loginError.classList.add('hidden');
-        }
-
         // ===== FUNCIONES DEL PANEL DE ADMINISTRADOR =====
 
-        function loadAdminData() {
-            loadUsersTable();
-            loadLoginTexts();
+        async function loadAdminData() {
+            await loadUsersTable();
+            loadLoginTextsToForm();
         }
 
-        function loadLoginTexts() {
-            const config = demoConfig.loginTexts;
-            document.getElementById('mainTitle').value = config.mainTitle;
-            document.getElementById('subtitle').value = config.subtitle;
-            document.getElementById('description').value = config.description;
+        function loadLoginTextsToForm() {
+            if (isFirebaseInitialized) {
+                // Los datos ya se cargaron en loadConfiguration
+                const loginTexts = {
+                    mainTitle: document.getElementById('loginTitle').textContent.replace('📊 ', ''),
+                    subtitle: document.getElementById('loginSubtitle').textContent,
+                    department: document.getElementById('loginDepartment').textContent,
+                    description: document.getElementById('loginDescription').textContent.replace('🔍 ', '')
+                };
+                
+                document.getElementById('mainTitle').value = loginTexts.mainTitle;
+                document.getElementById('subtitle').value = loginTexts.subtitle;
+                document.getElementById('department').value = loginTexts.department;
+                document.getElementById('description').value = loginTexts.description;
+            } else {
+                // Usar datos por defecto
+                document.getElementById('mainTitle').value = defaultData.loginTexts.mainTitle;
+                document.getElementById('subtitle').value = defaultData.loginTexts.subtitle;
+                document.getElementById('department').value = defaultData.loginTexts.department;
+                document.getElementById('description').value = defaultData.loginTexts.description;
+            }
         }
 
         async function saveLoginTexts() {
             const loginTexts = {
                 mainTitle: document.getElementById('mainTitle').value,
                 subtitle: document.getElementById('subtitle').value,
+                department: document.getElementById('department').value,
                 description: document.getElementById('description').value
             };
 
             try {
-                demoConfig.loginTexts = loginTexts;
+                if (isFirebaseInitialized) {
+                    const { setDoc, doc } = window.firebaseFunctions;
+                    await setDoc(doc(window.firebaseDb, 'config', 'loginTexts'), loginTexts);
+                }
+                
+                // Actualizar la interfaz inmediatamente
+                updateLoginTexts(loginTexts);
                 showNotification('✅ Textos de login actualizados correctamente');
             } catch (error) {
                 console.error('Error guardando textos:', error);
@@ -767,39 +1068,58 @@
             }
         }
 
-        function loadUsersTable() {
+        async function loadUsersTable() {
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '';
 
-            allUsers = Object.values(demoUsers).filter(user => user.role === 'user');
+            try {
+                if (isFirebaseInitialized) {
+                    // Cargar desde Firestore
+                    const { getDocs, collection, query, where } = window.firebaseFunctions;
+                    const usersQuery = query(collection(window.firebaseDb, 'users'), where('role', '==', 'user'));
+                    const querySnapshot = await getDocs(usersQuery);
+                    
+                    allUsers = [];
+                    querySnapshot.forEach((doc) => {
+                        allUsers.push(doc.data());
+                    });
+                } else {
+                    // Usar datos por defecto
+                    allUsers = [...defaultData.defaultUsers];
+                }
 
-            allUsers.forEach(user => {
-                const row = document.createElement('tr');
-                row.className = 'border-b border-gray-200 hover:bg-gray-50';
+                allUsers.forEach(user => {
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-gray-200 hover:bg-gray-50';
+                    
+                    const shortComments = user.generalComments ? 
+                        (user.generalComments.length > 50 ? user.generalComments.substring(0, 50) + '...' : user.generalComments) : 
+                        'Sin comentarios';
+
+                    row.innerHTML = `
+                        <td class="px-4 py-3 text-sm text-gray-900">${user.username || 'N/A'}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900">${user.name}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900">${user.generalScore || 0}/100</td>
+                        <td class="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">${shortComments}</td>
+                        <td class="px-4 py-3 text-sm space-x-2">
+                            <button onclick="editUser('${user.username}')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs transition-all">
+                                ✏️ Editar
+                            </button>
+                            <button onclick="showUserDetails('${user.username}')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs transition-all">
+                                📊 Detalles
+                            </button>
+                            <button onclick="deleteUser('${user.username}')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition-all">
+                                🗑️ Eliminar
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
                 
-                const shortComments = user.generalComments ? 
-                    (user.generalComments.length > 50 ? user.generalComments.substring(0, 50) + '...' : user.generalComments) : 
-                    'Sin comentarios';
-
-                row.innerHTML = `
-                    <td class="px-4 py-3 text-sm text-gray-900">${user.username || 'N/A'}</td>
-                    <td class="px-4 py-3 text-sm text-gray-900">${user.name}</td>
-                    <td class="px-4 py-3 text-sm text-gray-900">${user.generalScore || 0}/100</td>
-                    <td class="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">${shortComments}</td>
-                    <td class="px-4 py-3 text-sm space-x-2">
-                        <button onclick="editUser('${user.username}')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs transition-all">
-                            ✏️ Editar
-                        </button>
-                        <button onclick="showUserDetails('${user.username}')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs transition-all">
-                            📊 Detalles
-                        </button>
-                        <button onclick="deleteUser('${user.username}')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition-all">
-                            🗑️ Eliminar
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
+            } catch (error) {
+                console.error('Error cargando usuarios:', error);
+                showNotification('❌ Error cargando usuarios', 'error');
+            }
         }
 
         // ===== GESTIÓN DE USUARIOS =====
@@ -811,11 +1131,13 @@
             
             if (username) {
                 title.textContent = '✏️ Editar Usuario';
-                const user = demoUsers[username];
-                document.getElementById('userId').value = user.username || '';
-                document.getElementById('userNameInput').value = user.name || '';
-                document.getElementById('userGeneralScore').value = user.generalScore || 0;
-                document.getElementById('userComments').value = user.generalComments || '';
+                const user = allUsers.find(u => u.username === username);
+                if (user) {
+                    document.getElementById('userId').value = user.username || '';
+                    document.getElementById('userNameInput').value = user.name || '';
+                    document.getElementById('userGeneralScore').value = user.generalScore || 0;
+                    document.getElementById('userComments').value = user.generalComments || '';
+                }
             } else {
                 title.textContent = '➕ Añadir Usuario';
                 document.getElementById('userForm').reset();
@@ -839,22 +1161,48 @@
                 username: document.getElementById('userId').value,
                 name: document.getElementById('userNameInput').value,
                 role: 'user',
-                password: 'password123',
                 generalScore: parseInt(document.getElementById('userGeneralScore').value),
                 generalComments: document.getElementById('userComments').value,
-                categories: demoUsers['usuario01'].categories // Categorías por defecto
+                categories: getDefaultCategories()
             };
 
             try {
-                demoUsers[userData.username] = userData;
+                if (isFirebaseInitialized) {
+                    const { setDoc, doc } = window.firebaseFunctions;
+                    await setDoc(doc(window.firebaseDb, 'users', userData.username), userData);
+                    
+                    // Crear usuario en Authentication si no existe
+                    const email = nicknameToEmail[userData.username];
+                    if (email) {
+                        try {
+                            const { createUserWithEmailAndPassword } = window.firebaseFunctions;
+                            await createUserWithEmailAndPassword(window.firebaseAuth, email, 'password123');
+                        } catch (error) {
+                            if (error.code !== 'auth/email-already-in-use') {
+                                console.error('Error creando usuario en Auth:', error);
+                            }
+                        }
+                    }
+                }
                 
                 closeUserModal();
-                loadUsersTable();
+                await loadUsersTable();
                 showNotification('✅ Usuario guardado correctamente');
             } catch (error) {
                 console.error('Error guardando usuario:', error);
                 showNotification('❌ Error al guardar el usuario', 'error');
             }
+        }
+
+        function getDefaultCategories() {
+            const categories = {};
+            categoriesData.forEach(category => {
+                categories[category.name] = {
+                    score: 0,
+                    criteria: [...category.criteria]
+                };
+            });
+            return categories;
         }
 
         function editUser(username) {
@@ -864,8 +1212,12 @@
         async function deleteUser(username) {
             if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
                 try {
-                    delete demoUsers[username];
-                    loadUsersTable();
+                    if (isFirebaseInitialized) {
+                        const { deleteDoc, doc } = window.firebaseFunctions;
+                        await deleteDoc(doc(window.firebaseDb, 'users', username));
+                    }
+                    
+                    await loadUsersTable();
                     showNotification('✅ Usuario eliminado correctamente');
                 } catch (error) {
                     console.error('Error eliminando usuario:', error);
@@ -877,7 +1229,7 @@
         // ===== MODAL DE DETALLES =====
 
         function showUserDetails(username) {
-            const user = demoUsers[username];
+            const user = allUsers.find(u => u.username === username);
             if (!user) return;
 
             document.getElementById('detailsUserId').value = user.username || '';
@@ -957,10 +1309,13 @@
             });
 
             try {
-                demoUsers[currentEditingUser] = { ...demoUsers[currentEditingUser], ...userData };
+                if (isFirebaseInitialized) {
+                    const { setDoc, doc } = window.firebaseFunctions;
+                    await setDoc(doc(window.firebaseDb, 'users', currentEditingUser), userData);
+                }
                 
                 closeDetailsModal();
-                loadUsersTable();
+                await loadUsersTable();
                 showNotification('✅ Detalles del usuario actualizados correctamente');
             } catch (error) {
                 console.error('Error actualizando usuario:', error);
@@ -984,14 +1339,15 @@
 
         async function clearAllUsers() {
             try {
-                Object.keys(demoUsers).forEach(username => {
-                    if (demoUsers[username].role === 'user') {
-                        delete demoUsers[username];
+                if (isFirebaseInitialized) {
+                    const { deleteDoc, doc } = window.firebaseFunctions;
+                    for (const user of allUsers) {
+                        await deleteDoc(doc(window.firebaseDb, 'users', user.username));
                     }
-                });
+                }
                 
                 closeConfirmModal();
-                loadUsersTable();
+                await loadUsersTable();
                 showNotification('✅ Todos los usuarios han sido eliminados');
             } catch (error) {
                 console.error('Error vaciando tabla:', error);
@@ -1000,10 +1356,6 @@
         }
 
         // ===== GESTIÓN DE CATEGORÍAS =====
-
-        function loadCategoriesData() {
-            categoriesData = [...demoConfig.evaluationTemplate.categories];
-        }
 
         function openCategoriesModal() {
             loadCategoriesEditContainer();
@@ -1099,8 +1451,15 @@
             });
 
             try {
-                demoConfig.evaluationTemplate.categories = updatedCategories;
+                if (isFirebaseInitialized) {
+                    const { setDoc, doc } = window.firebaseFunctions;
+                    await setDoc(doc(window.firebaseDb, 'config', 'evaluationTemplate'), {
+                        categories: updatedCategories
+                    });
+                }
+                
                 categoriesData = [...updatedCategories];
+                evaluationTemplate = { categories: updatedCategories };
                 
                 closeCategoriesModal();
                 showNotification('✅ Categorías actualizadas correctamente');
@@ -1144,6 +1503,7 @@
             loginScreen.classList.remove('hidden');
             adminPanel.classList.add('hidden');
             dashboard.classList.add('hidden');
+            loadingScreen.classList.add('hidden');
         }
 
         function restoreScreen(screenType) {
@@ -1162,31 +1522,6 @@
 
         async function ensureDataLoaded() {
             await new Promise(resolve => setTimeout(resolve, 50));
-            updateLoginTextsInDOM();
-        }
-
-        function updateLoginTextsInDOM() {
-            const config = demoConfig.loginTexts;
-            
-            const mainTitleElement = document.querySelector('#loginScreen h1');
-            if (mainTitleElement) {
-                mainTitleElement.textContent = '📊 Evaluación Modular';
-            }
-            
-            const subtitleElement = document.querySelector('#loginScreen h2');
-            if (subtitleElement) {
-                subtitleElement.textContent = config.mainTitle.replace('Evaluación Modular – ', '');
-            }
-            
-            const departmentElement = document.querySelector('#loginScreen p.text-\\[\\#ff8500\\]');
-            if (departmentElement) {
-                departmentElement.textContent = config.subtitle;
-            }
-            
-            const descriptionElement = document.querySelector('#loginScreen p.text-gray-600');
-            if (descriptionElement) {
-                descriptionElement.textContent = '🔍 ' + config.description;
-            }
         }
 
         function downloadHTMLFile(htmlContent, filename) {
@@ -1231,6 +1566,14 @@
                 }, 300);
             }, 3000);
         }
+
+        // Hacer funciones globales para los botones inline
+        window.editUser = editUser;
+        window.showUserDetails = showUserDetails;
+        window.deleteUser = deleteUser;
+        window.removeCategory = removeCategory;
+        window.addCriteria = addCriteria;
+        window.removeCriteria = removeCriteria;
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9798078c411220aa',t:'MTc1NjkzMTY4My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'979879ba068f20aa',t:'MTc1NjkzNjM2MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
