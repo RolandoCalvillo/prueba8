@@ -113,8 +113,22 @@
             
             <form id="loginForm" class="space-y-4">
                 <div>
+                    <label class="block text-gray-700 text-sm font-medium mb-2">👨‍💼 Administrador</label>
+                    <select id="adminSelect" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff] focus:border-transparent transition-all">
+                        <option value="">Selecciona tu administrador</option>
+                        <option value="Admin01">Admin01 - Departamento Académico</option>
+                        <option value="Admin02">Admin02 - Servicios Estudiantiles</option>
+                        <option value="Admin03">Admin03 - Admisiones</option>
+                        <option value="Admin04">Admin04 - Finanzas</option>
+                        <option value="Admin05">Admin05 - Tecnología</option>
+                        <option value="Admin06">Admin06 - Recursos Humanos</option>
+                        <option value="Admin07">Admin07 - Marketing</option>
+                        <option value="Admin08">Admin08 - Calidad</option>
+                    </select>
+                </div>
+                <div>
                     <label class="block text-gray-700 text-sm font-medium mb-2">👤 Usuario</label>
-                    <input type="text" id="username" required placeholder="Ej: usuario01, admin" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff] focus:border-transparent transition-all">
+                    <input type="text" id="username" required placeholder="Ej: usuario01, Admin01" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff] focus:border-transparent transition-all">
                 </div>
                 <div>
                     <label class="block text-gray-700 text-sm font-medium mb-2">🔒 Contraseña</label>
@@ -137,22 +151,31 @@
             <div class="bg-white rounded-2xl shadow-2xl p-8 fade-in">
                 <!-- Header con botones -->
                 <div class="flex justify-between items-center mb-8">
-                    <h1 class="text-3xl font-bold text-gray-800">👨‍💼 Panel de Administrador</h1>
-                    <div class="space-x-4">
-                        <button id="initFirebaseBtn" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-all">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-800">👨‍💼 Panel de Administrador</h1>
+                        <p class="text-gray-600 mt-1">Sesión: <span id="currentAdminInfo" class="text-[#2a6aff] font-semibold">Cargando...</span></p>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button id="initFirebaseBtn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-all text-sm">
                             🔧 Inicializar Firebase
                         </button>
-                        <button id="downloadCSVBtn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition-all">
-                            📥 Descargar Plantilla CSV
+                        <button id="addAdminBtn" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-all text-sm">
+                            👨‍💼 Añadir Admin
                         </button>
-                        <button id="uploadCSVBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-all">
+                        <button id="manageAdminsBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-all text-sm">
+                            ⚙️ Gestionar Admins
+                        </button>
+                        <button id="downloadCSVBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all text-sm">
+                            📥 Descargar CSV
+                        </button>
+                        <button id="uploadCSVBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-all text-sm">
                             📤 Cargar CSV
                         </button>
                         <input type="file" id="csvFileInput" accept=".csv" class="hidden">
-                        <button id="clearTableBtn" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg transition-all">
+                        <button id="clearTableBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-all text-sm">
                             🗑️ Vaciar Tabla
                         </button>
-                        <button id="adminLogout" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-all">
+                        <button id="adminLogout" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-all text-sm">
                             🚪 Cerrar Sesión
                         </button>
                     </div>
@@ -406,6 +429,94 @@
         </div>
     </div>
 
+    <!-- Modal Añadir Admin -->
+    <div id="addAdminModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800">👨‍💼 Añadir Nuevo Administrador</h3>
+                <button id="closeAddAdminModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            <form id="addAdminForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 text-sm font-medium mb-2">ID Administrador</label>
+                    <input type="text" id="newAdminId" required placeholder="Ej: Admin09" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Nombre Completo</label>
+                    <input type="text" id="newAdminName" required placeholder="Ej: Juan Pérez García" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Departamento</label>
+                    <input type="text" id="newAdminDepartment" required placeholder="Ej: Departamento de Operaciones" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Contraseña</label>
+                    <input type="password" id="newAdminPassword" required placeholder="Contraseña del administrador" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6aff]">
+                </div>
+                <div class="flex space-x-4 pt-4">
+                    <button type="submit" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg transition-all">
+                        ➕ Crear Administrador
+                    </button>
+                    <button type="button" id="cancelAddAdminModal" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-lg transition-all">
+                        ❌ Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Gestionar Admins -->
+    <div id="manageAdminsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800">⚙️ Gestionar Administradores</h3>
+                <button id="closeManageAdminsModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full bg-white border border-gray-200 rounded-lg">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">ID Admin</th>
+                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Nombre</th>
+                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Departamento</th>
+                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Usuarios</th>
+                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminsTableBody">
+                        <!-- Los administradores se cargarán dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="flex justify-end mt-6">
+                <button id="closeManageAdminsBtn" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-all">
+                    ✅ Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Confirmación Eliminar Admin -->
+    <div id="confirmDeleteAdminModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
+            <div class="text-center">
+                <div class="text-6xl mb-4">⚠️</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Confirmar Eliminación</h3>
+                <p class="text-gray-600 mb-2">¿Estás seguro de que deseas eliminar al administrador:</p>
+                <p id="adminToDeleteName" class="font-semibold text-red-600 mb-4"></p>
+                <p class="text-sm text-gray-500 mb-6">Esta acción también eliminará todos los usuarios asociados a este administrador.</p>
+                <div class="flex space-x-4">
+                    <button id="confirmDeleteAdmin" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg transition-all">
+                        🗑️ Sí, Eliminar
+                    </button>
+                    <button id="cancelDeleteAdmin" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-lg transition-all">
+                        ❌ Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Editar Categorías -->
     <div id="categoriesModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-2xl p-8 max-w-5xl w-full mx-4 max-h-[90vh] overflow-y-auto">
@@ -557,27 +668,73 @@
         let categoriesData = [];
         let isFirebaseInitialized = false;
 
-        // Sistema de autenticación local (más confiable)
+        // Sistema de autenticación local con múltiples administradores
         const defaultCredentials = {
-            'admin': { password: 'admin123', role: 'admin' },
-            'usuario01': { password: 'password123', role: 'user' },
-            'usuario02': { password: 'password123', role: 'user' },
-            'usuario03': { password: 'password123', role: 'user' },
-            'usuario04': { password: 'password123', role: 'user' },
-            'usuario05': { password: 'password123', role: 'user' },
-            'usuario06': { password: 'password123', role: 'user' },
-            'usuario07': { password: 'password123', role: 'user' },
-            'usuario08': { password: 'password123', role: 'user' },
-            'usuario09': { password: 'password123', role: 'user' },
-            'usuario10': { password: 'password123', role: 'user' },
-            'usuario11': { password: 'password123', role: 'user' },
-            'usuario12': { password: 'password123', role: 'user' },
-            'usuario13': { password: 'password123', role: 'user' },
-            'usuario14': { password: 'password123', role: 'user' },
-            'usuario15': { password: 'password123', role: 'user' },
-            'usuario16': { password: 'password123', role: 'user' },
-            'usuario17': { password: 'password123', role: 'user' },
-            'usuario18': { password: 'password123', role: 'user' }
+            // Administradores
+            'Admin01': { password: 'admin123', role: 'admin', name: 'Ana García Martínez', department: 'Departamento Académico' },
+            'Admin02': { password: 'admin123', role: 'admin', name: 'Carlos López Hernández', department: 'Servicios Estudiantiles' },
+            'Admin03': { password: 'admin123', role: 'admin', name: 'María Rodríguez Pérez', department: 'Admisiones' },
+            'Admin04': { password: 'admin123', role: 'admin', name: 'José Martínez González', department: 'Finanzas' },
+            'Admin05': { password: 'admin123', role: 'admin', name: 'Laura Sánchez Torres', department: 'Tecnología' },
+            'Admin06': { password: 'admin123', role: 'admin', name: 'Roberto Díaz Morales', department: 'Recursos Humanos' },
+            'Admin07': { password: 'admin123', role: 'admin', name: 'Patricia Jiménez Ruiz', department: 'Marketing' },
+            'Admin08': { password: 'admin123', role: 'admin', name: 'Fernando Castro López', department: 'Calidad' },
+            
+            // Usuarios de Admin01
+            'usuario01_A01': { password: 'pass123', role: 'user', adminId: 'Admin01' },
+            'usuario02_A01': { password: 'pass123', role: 'user', adminId: 'Admin01' },
+            'usuario03_A01': { password: 'pass123', role: 'user', adminId: 'Admin01' },
+            'usuario04_A01': { password: 'pass123', role: 'user', adminId: 'Admin01' },
+            'usuario05_A01': { password: 'pass123', role: 'user', adminId: 'Admin01' },
+            
+            // Usuarios de Admin02
+            'usuario01_A02': { password: 'pass123', role: 'user', adminId: 'Admin02' },
+            'usuario02_A02': { password: 'pass123', role: 'user', adminId: 'Admin02' },
+            'usuario03_A02': { password: 'pass123', role: 'user', adminId: 'Admin02' },
+            'usuario04_A02': { password: 'pass123', role: 'user', adminId: 'Admin02' },
+            'usuario05_A02': { password: 'pass123', role: 'user', adminId: 'Admin02' },
+            
+            // Usuarios de Admin03
+            'usuario01_A03': { password: 'pass123', role: 'user', adminId: 'Admin03' },
+            'usuario02_A03': { password: 'pass123', role: 'user', adminId: 'Admin03' },
+            'usuario03_A03': { password: 'pass123', role: 'user', adminId: 'Admin03' },
+            'usuario04_A03': { password: 'pass123', role: 'user', adminId: 'Admin03' },
+            'usuario05_A03': { password: 'pass123', role: 'user', adminId: 'Admin03' },
+            
+            // Usuarios de Admin04
+            'usuario01_A04': { password: 'pass123', role: 'user', adminId: 'Admin04' },
+            'usuario02_A04': { password: 'pass123', role: 'user', adminId: 'Admin04' },
+            'usuario03_A04': { password: 'pass123', role: 'user', adminId: 'Admin04' },
+            'usuario04_A04': { password: 'pass123', role: 'user', adminId: 'Admin04' },
+            'usuario05_A04': { password: 'pass123', role: 'user', adminId: 'Admin04' },
+            
+            // Usuarios de Admin05
+            'usuario01_A05': { password: 'pass123', role: 'user', adminId: 'Admin05' },
+            'usuario02_A05': { password: 'pass123', role: 'user', adminId: 'Admin05' },
+            'usuario03_A05': { password: 'pass123', role: 'user', adminId: 'Admin05' },
+            'usuario04_A05': { password: 'pass123', role: 'user', adminId: 'Admin05' },
+            'usuario05_A05': { password: 'pass123', role: 'user', adminId: 'Admin05' },
+            
+            // Usuarios de Admin06
+            'usuario01_A06': { password: 'pass123', role: 'user', adminId: 'Admin06' },
+            'usuario02_A06': { password: 'pass123', role: 'user', adminId: 'Admin06' },
+            'usuario03_A06': { password: 'pass123', role: 'user', adminId: 'Admin06' },
+            'usuario04_A06': { password: 'pass123', role: 'user', adminId: 'Admin06' },
+            'usuario05_A06': { password: 'pass123', role: 'user', adminId: 'Admin06' },
+            
+            // Usuarios de Admin07
+            'usuario01_A07': { password: 'pass123', role: 'user', adminId: 'Admin07' },
+            'usuario02_A07': { password: 'pass123', role: 'user', adminId: 'Admin07' },
+            'usuario03_A07': { password: 'pass123', role: 'user', adminId: 'Admin07' },
+            'usuario04_A07': { password: 'pass123', role: 'user', adminId: 'Admin07' },
+            'usuario05_A07': { password: 'pass123', role: 'user', adminId: 'Admin07' },
+            
+            // Usuarios de Admin08
+            'usuario01_A08': { password: 'pass123', role: 'user', adminId: 'Admin08' },
+            'usuario02_A08': { password: 'pass123', role: 'user', adminId: 'Admin08' },
+            'usuario03_A08': { password: 'pass123', role: 'user', adminId: 'Admin08' },
+            'usuario04_A08': { password: 'pass123', role: 'user', adminId: 'Admin08' },
+            'usuario05_A08': { password: 'pass123', role: 'user', adminId: 'Admin08' }
         };
 
         // Mapeo de nicknames a emails (para Firebase cuando esté disponible)
@@ -651,11 +808,13 @@
                 ]
             },
             defaultUsers: [
+                // Usuarios de Admin01
                 {
-                    username: 'usuario01',
+                    username: 'usuario01_A01',
                     name: 'María González Pérez',
                     role: 'user',
-                    password: 'password123',
+                    adminId: 'Admin01',
+                    password: 'pass123',
                     generalScore: 87,
                     generalComments: 'Excelente desempeño en retención y reincorporación. Se destaca por su seguimiento oportuno a estudiantes morosos y uso efectivo del CRM.',
                     badges: {
@@ -751,10 +910,11 @@
                     }
                 },
                 {
-                    username: 'usuario02',
+                    username: 'usuario02_A01',
                     name: 'Carlos Rodríguez López',
                     role: 'user',
-                    password: 'password123',
+                    adminId: 'Admin01',
+                    password: 'pass123',
                     generalScore: 92,
                     generalComments: 'Muy buen desempeño general. Excelente manejo de procesos académicos y comunicación con estudiantes.',
                     badges: {
@@ -848,6 +1008,88 @@
                             ]
                         }
                     }
+                },
+                // Usuarios adicionales de Admin01
+                {
+                    username: 'usuario03_A01',
+                    name: 'Ana Martínez Silva',
+                    role: 'user',
+                    adminId: 'Admin01',
+                    password: 'pass123',
+                    generalScore: 85,
+                    generalComments: 'Buen desempeño general con oportunidades de mejora en comunicación digital.',
+                    badges: { excellence: false, communicator: false, consistent: true },
+                    workPlan: {
+                        objectives: 'Mejorar redacción en correos\nOptimizar tiempos de respuesta',
+                        resources: 'Curso de redacción profesional\nTaller de gestión del tiempo',
+                        additionalNotes: 'Muestra consistencia en sus tareas diarias.'
+                    },
+                    categories: {}
+                },
+                {
+                    username: 'usuario04_A01',
+                    name: 'Luis Fernando Torres',
+                    role: 'user',
+                    adminId: 'Admin01',
+                    password: 'pass123',
+                    generalScore: 78,
+                    generalComments: 'Desempeño satisfactorio con necesidad de reforzar procesos administrativos.',
+                    badges: { excellence: false, communicator: true, consistent: false },
+                    workPlan: {
+                        objectives: 'Mejorar registro en CRM\nIncrementar seguimiento a estudiantes',
+                        resources: 'Manual de procesos CRM\nCapacitación en seguimiento estudiantil',
+                        additionalNotes: 'Excelente en comunicación telefónica.'
+                    },
+                    categories: {}
+                },
+                {
+                    username: 'usuario05_A01',
+                    name: 'Carmen Beatriz Herrera',
+                    role: 'user',
+                    adminId: 'Admin01',
+                    password: 'pass123',
+                    generalScore: 90,
+                    generalComments: 'Excelente desempeño en todas las áreas evaluadas.',
+                    badges: { excellence: true, communicator: true, consistent: true },
+                    workPlan: {
+                        objectives: 'Mantener nivel de excelencia\nMentoría a compañeros nuevos',
+                        resources: 'Certificación avanzada\nCurso de liderazgo',
+                        additionalNotes: 'Candidata para promoción a roles de supervisión.'
+                    },
+                    categories: {}
+                },
+                // Usuarios de Admin02
+                {
+                    username: 'usuario01_A02',
+                    name: 'Roberto Sánchez Morales',
+                    role: 'user',
+                    adminId: 'Admin02',
+                    password: 'pass123',
+                    generalScore: 82,
+                    generalComments: 'Buen desempeño en servicios estudiantiles con enfoque en retención.',
+                    badges: { excellence: false, communicator: true, consistent: true },
+                    workPlan: {
+                        objectives: 'Incrementar tasa de retención\nMejorar seguimiento post-contacto',
+                        resources: 'Estrategias de retención estudiantil\nTécnicas de seguimiento efectivo',
+                        additionalNotes: 'Especialista en comunicación con estudiantes.'
+                    },
+                    categories: {}
+                },
+                {
+                    username: 'usuario02_A02',
+                    name: 'Sofía Ramírez Castro',
+                    role: 'user',
+                    adminId: 'Admin02',
+                    password: 'pass123',
+                    generalScore: 88,
+                    generalComments: 'Excelente manejo de casos complejos y resolución de problemas estudiantiles.',
+                    badges: { excellence: false, communicator: true, consistent: true },
+                    workPlan: {
+                        objectives: 'Desarrollar protocolos de atención\nCapacitar a nuevos miembros del equipo',
+                        resources: 'Curso de resolución de conflictos\nTaller de atención al cliente',
+                        additionalNotes: 'Referente en manejo de situaciones difíciles.'
+                    },
+                    categories: {}
                 }
             ]
         };
@@ -1045,6 +1287,23 @@
                 document.getElementById('csvFileInput').click();
             });
             document.getElementById('csvFileInput').addEventListener('change', handleCSVUpload);
+
+            // Admin management
+            document.getElementById('addAdminBtn').addEventListener('click', openAddAdminModal);
+            document.getElementById('manageAdminsBtn').addEventListener('click', openManageAdminsModal);
+            
+            // Add Admin Modal
+            document.getElementById('closeAddAdminModal').addEventListener('click', closeAddAdminModal);
+            document.getElementById('cancelAddAdminModal').addEventListener('click', closeAddAdminModal);
+            document.getElementById('addAdminForm').addEventListener('submit', saveNewAdmin);
+            
+            // Manage Admins Modal
+            document.getElementById('closeManageAdminsModal').addEventListener('click', closeManageAdminsModal);
+            document.getElementById('closeManageAdminsBtn').addEventListener('click', closeManageAdminsModal);
+            
+            // Delete Admin Modal
+            document.getElementById('confirmDeleteAdmin').addEventListener('click', confirmDeleteAdmin);
+            document.getElementById('cancelDeleteAdmin').addEventListener('click', closeDeleteAdminModal);
         }
 
         // ===== INICIALIZACIÓN AUTOMÁTICA DE FIREBASE =====
@@ -1124,10 +1383,16 @@
         async function handleLogin(e) {
             e.preventDefault();
             
+            const selectedAdmin = document.getElementById('adminSelect').value;
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             
             try {
+                // Verificar que se haya seleccionado un administrador
+                if (!selectedAdmin) {
+                    throw new Error('Debes seleccionar un administrador');
+                }
+                
                 // Verificar credenciales localmente primero
                 if (!userCredentials[username]) {
                     throw new Error('Usuario no encontrado');
@@ -1137,11 +1402,26 @@
                     throw new Error('Contraseña incorrecta');
                 }
                 
+                // Verificar que el usuario pertenezca al admin seleccionado (si es usuario)
+                if (userCredentials[username].role === 'user') {
+                    if (userCredentials[username].adminId !== selectedAdmin) {
+                        throw new Error('Usuario no pertenece al administrador seleccionado');
+                    }
+                }
+                
+                // Verificar que el admin coincida (si es admin)
+                if (userCredentials[username].role === 'admin') {
+                    if (username !== selectedAdmin) {
+                        throw new Error('El administrador no coincide con el usuario ingresado');
+                    }
+                }
+                
                 // Cargar datos del usuario
-                if (username === 'admin') {
+                if (userCredentials[username].role === 'admin') {
                     currentUser = {
-                        username: 'admin',
-                        name: 'Administrador CNCI',
+                        username: username,
+                        name: userCredentials[username].name,
+                        department: userCredentials[username].department,
                         role: 'admin'
                     };
                 } else {
@@ -1392,6 +1672,12 @@
         // ===== FUNCIONES DEL PANEL DE ADMINISTRADOR =====
 
         async function loadAdminData() {
+            // Mostrar información del administrador actual
+            const adminInfo = document.getElementById('currentAdminInfo');
+            if (currentUser && currentUser.role === 'admin') {
+                adminInfo.textContent = `${currentUser.name} (${currentUser.username}) - ${currentUser.department}`;
+            }
+            
             await loadUsersTable();
             loadLoginTextsToForm();
         }
@@ -1448,9 +1734,13 @@
 
             try {
                 if (isFirebaseInitialized) {
-                    // Cargar desde Firestore
+                    // Cargar desde Firestore solo usuarios del admin actual
                     const { getDocs, collection, query, where } = window.firebaseFunctions;
-                    const usersQuery = query(collection(window.firebaseDb, 'users'), where('role', '==', 'user'));
+                    const usersQuery = query(
+                        collection(window.firebaseDb, 'users'), 
+                        where('role', '==', 'user'),
+                        where('adminId', '==', currentUser.username)
+                    );
                     const querySnapshot = await getDocs(usersQuery);
                     
                     allUsers = [];
@@ -1458,8 +1748,10 @@
                         allUsers.push(doc.data());
                     });
                 } else {
-                    // Usar datos por defecto
-                    allUsers = [...defaultData.defaultUsers];
+                    // Usar datos por defecto filtrados por admin
+                    allUsers = defaultData.defaultUsers.filter(user => 
+                        user.adminId === currentUser.username
+                    );
                 }
 
                 allUsers.forEach(user => {
@@ -1545,6 +1837,7 @@
                 username: document.getElementById('userId').value,
                 name: document.getElementById('userNameInput').value,
                 role: 'user',
+                adminId: currentUser.username, // Asignar al admin actual
                 generalComments: document.getElementById('userComments').value,
                 categories: getDefaultCategories(),
                 badges: {
@@ -1566,16 +1859,18 @@
                 if (newPassword && newPassword.trim() !== '') {
                     userCredentials[userData.username] = {
                         password: newPassword,
-                        role: 'user'
+                        role: 'user',
+                        adminId: currentUser.username
                     };
                     userData.password = newPassword;
                 } else if (!userCredentials[userData.username]) {
                     // Usuario nuevo sin contraseña especificada
                     userCredentials[userData.username] = {
-                        password: 'password123',
-                        role: 'user'
+                        password: 'pass123',
+                        role: 'user',
+                        adminId: currentUser.username
                     };
-                    userData.password = 'password123';
+                    userData.password = 'pass123';
                 } else {
                     // Mantener contraseña existente
                     userData.password = userCredentials[userData.username].password;
@@ -2500,6 +2795,224 @@
             }, 3000);
         }
 
+        // ===== GESTIÓN DE ADMINISTRADORES =====
+
+        function openAddAdminModal() {
+            const modal = document.getElementById('addAdminModal');
+            document.getElementById('addAdminForm').reset();
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeAddAdminModal() {
+            const modal = document.getElementById('addAdminModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        async function saveNewAdmin(e) {
+            e.preventDefault();
+            
+            const adminData = {
+                username: document.getElementById('newAdminId').value,
+                name: document.getElementById('newAdminName').value,
+                department: document.getElementById('newAdminDepartment').value,
+                password: document.getElementById('newAdminPassword').value,
+                role: 'admin'
+            };
+
+            try {
+                // Verificar que el ID no exista
+                if (userCredentials[adminData.username]) {
+                    throw new Error('El ID de administrador ya existe');
+                }
+
+                // Agregar a credenciales
+                userCredentials[adminData.username] = {
+                    password: adminData.password,
+                    role: 'admin',
+                    name: adminData.name,
+                    department: adminData.department
+                };
+
+                if (isFirebaseInitialized) {
+                    const { setDoc, doc } = window.firebaseFunctions;
+                    
+                    // Guardar admin en Firestore
+                    await setDoc(doc(window.firebaseDb, 'admins', adminData.username), adminData);
+                    
+                    // Actualizar credenciales en Firebase
+                    await setDoc(doc(window.firebaseDb, 'config', 'userCredentials'), userCredentials);
+                }
+
+                // Actualizar dropdown de login
+                updateAdminDropdown();
+                
+                closeAddAdminModal();
+                showNotification('✅ Administrador creado correctamente');
+                
+            } catch (error) {
+                console.error('Error creando administrador:', error);
+                showNotification('❌ Error al crear el administrador: ' + error.message, 'error');
+            }
+        }
+
+        function updateAdminDropdown() {
+            const adminSelect = document.getElementById('adminSelect');
+            const currentOptions = Array.from(adminSelect.options).map(opt => opt.value);
+            
+            // Agregar nuevos administradores al dropdown
+            Object.keys(userCredentials).forEach(username => {
+                if (userCredentials[username].role === 'admin' && !currentOptions.includes(username)) {
+                    const option = document.createElement('option');
+                    option.value = username;
+                    option.textContent = `${username} - ${userCredentials[username].department}`;
+                    adminSelect.appendChild(option);
+                }
+            });
+        }
+
+        async function openManageAdminsModal() {
+            const modal = document.getElementById('manageAdminsModal');
+            await loadAdminsTable();
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeManageAdminsModal() {
+            const modal = document.getElementById('manageAdminsModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        async function loadAdminsTable() {
+            const tbody = document.getElementById('adminsTableBody');
+            tbody.innerHTML = '';
+
+            try {
+                const adminList = Object.keys(userCredentials).filter(username => 
+                    userCredentials[username].role === 'admin'
+                );
+
+                for (const adminId of adminList) {
+                    const adminData = userCredentials[adminId];
+                    
+                    // Contar usuarios de este admin
+                    let userCount = 0;
+                    if (isFirebaseInitialized) {
+                        const { getDocs, collection, query, where } = window.firebaseFunctions;
+                        const usersQuery = query(
+                            collection(window.firebaseDb, 'users'),
+                            where('adminId', '==', adminId)
+                        );
+                        const querySnapshot = await getDocs(usersQuery);
+                        userCount = querySnapshot.size;
+                    } else {
+                        userCount = defaultData.defaultUsers.filter(user => user.adminId === adminId).length;
+                    }
+
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-gray-200 hover:bg-gray-50';
+                    
+                    row.innerHTML = `
+                        <td class="px-4 py-3 text-sm text-gray-900 font-semibold">${adminId}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900">${adminData.name}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">${adminData.department}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900 text-center">${userCount}</td>
+                        <td class="px-4 py-3 text-sm space-x-2">
+                            <button onclick="deleteAdmin('${adminId}')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition-all">
+                                🗑️ Eliminar
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                }
+                
+            } catch (error) {
+                console.error('Error cargando administradores:', error);
+                showNotification('❌ Error cargando administradores', 'error');
+            }
+        }
+
+        let adminToDelete = null;
+
+        function deleteAdmin(adminId) {
+            adminToDelete = adminId;
+            const adminData = userCredentials[adminId];
+            document.getElementById('adminToDeleteName').textContent = `${adminData.name} (${adminId})`;
+            
+            const modal = document.getElementById('confirmDeleteAdminModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeDeleteAdminModal() {
+            const modal = document.getElementById('confirmDeleteAdminModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            adminToDelete = null;
+        }
+
+        async function confirmDeleteAdmin() {
+            if (!adminToDelete) return;
+
+            try {
+                // No permitir eliminar el admin actual
+                if (adminToDelete === currentUser.username) {
+                    throw new Error('No puedes eliminar tu propia cuenta de administrador');
+                }
+
+                if (isFirebaseInitialized) {
+                    const { deleteDoc, doc, getDocs, collection, query, where } = window.firebaseFunctions;
+                    
+                    // Eliminar todos los usuarios de este admin
+                    const usersQuery = query(
+                        collection(window.firebaseDb, 'users'),
+                        where('adminId', '==', adminToDelete)
+                    );
+                    const querySnapshot = await getDocs(usersQuery);
+                    
+                    const deletePromises = [];
+                    querySnapshot.forEach((userDoc) => {
+                        deletePromises.push(deleteDoc(doc(window.firebaseDb, 'users', userDoc.id)));
+                    });
+                    
+                    await Promise.all(deletePromises);
+                    
+                    // Eliminar el admin
+                    await deleteDoc(doc(window.firebaseDb, 'admins', adminToDelete));
+                }
+
+                // Eliminar de credenciales locales
+                delete userCredentials[adminToDelete];
+
+                // Eliminar usuarios asociados de datos locales
+                defaultData.defaultUsers = defaultData.defaultUsers.filter(user => 
+                    user.adminId !== adminToDelete
+                );
+
+                if (isFirebaseInitialized) {
+                    const { setDoc, doc } = window.firebaseFunctions;
+                    await setDoc(doc(window.firebaseDb, 'config', 'userCredentials'), userCredentials);
+                }
+
+                // Actualizar dropdown
+                const adminSelect = document.getElementById('adminSelect');
+                const optionToRemove = adminSelect.querySelector(`option[value="${adminToDelete}"]`);
+                if (optionToRemove) {
+                    optionToRemove.remove();
+                }
+
+                closeDeleteAdminModal();
+                await loadAdminsTable();
+                showNotification('✅ Administrador y sus usuarios eliminados correctamente');
+                
+            } catch (error) {
+                console.error('Error eliminando administrador:', error);
+                showNotification('❌ Error al eliminar el administrador: ' + error.message, 'error');
+            }
+        }
+
         // Hacer funciones globales para los botones inline
         window.editUser = editUser;
         window.showUserDetails = showUserDetails;
@@ -2507,6 +3020,7 @@
         window.removeCategory = removeCategory;
         window.addCriteria = addCriteria;
         window.removeCriteria = removeCriteria;
+        window.deleteAdmin = deleteAdmin;
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9798d604a76620aa',t:'MTc1Njk0MDE0MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'979911e212c938ef',t:'MTc1Njk0MjU5Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
