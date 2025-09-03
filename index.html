@@ -201,6 +201,7 @@
                                 <tr>
                                     <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Usuario</th>
                                     <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Nombre</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Contraseña</th>
                                     <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Puntaje General</th>
                                     <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Comentarios</th>
                                     <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Acciones</th>
@@ -554,7 +555,30 @@
         let categoriesData = [];
         let isFirebaseInitialized = false;
 
-        // Mapeo de nicknames a emails
+        // Sistema de autenticación local (más confiable)
+        const defaultCredentials = {
+            'admin': { password: 'admin123', role: 'admin' },
+            'usuario01': { password: 'password123', role: 'user' },
+            'usuario02': { password: 'password123', role: 'user' },
+            'usuario03': { password: 'password123', role: 'user' },
+            'usuario04': { password: 'password123', role: 'user' },
+            'usuario05': { password: 'password123', role: 'user' },
+            'usuario06': { password: 'password123', role: 'user' },
+            'usuario07': { password: 'password123', role: 'user' },
+            'usuario08': { password: 'password123', role: 'user' },
+            'usuario09': { password: 'password123', role: 'user' },
+            'usuario10': { password: 'password123', role: 'user' },
+            'usuario11': { password: 'password123', role: 'user' },
+            'usuario12': { password: 'password123', role: 'user' },
+            'usuario13': { password: 'password123', role: 'user' },
+            'usuario14': { password: 'password123', role: 'user' },
+            'usuario15': { password: 'password123', role: 'user' },
+            'usuario16': { password: 'password123', role: 'user' },
+            'usuario17': { password: 'password123', role: 'user' },
+            'usuario18': { password: 'password123', role: 'user' }
+        };
+
+        // Mapeo de nicknames a emails (para Firebase cuando esté disponible)
         const nicknameToEmail = {
             'admin': 'admin@cnci.edu.mx',
             'usuario01': 'usuario01@cnci.edu.mx',
@@ -576,6 +600,9 @@
             'usuario17': 'usuario17@cnci.edu.mx',
             'usuario18': 'usuario18@cnci.edu.mx'
         };
+
+        // Almacén de credenciales (se sincroniza con Firebase cuando está disponible)
+        let userCredentials = { ...defaultCredentials };
 
         // Datos por defecto para inicialización
         const defaultData = {
@@ -626,6 +653,7 @@
                     username: 'usuario01',
                     name: 'María González Pérez',
                     role: 'user',
+                    password: 'password123',
                     generalScore: 87,
                     generalComments: 'Excelente desempeño en retención y reincorporación. Se destaca por su seguimiento oportuno a estudiantes morosos y uso efectivo del CRM.',
                     badges: {
@@ -653,6 +681,7 @@
                     username: 'usuario02',
                     name: 'Carlos Rodríguez López',
                     role: 'user',
+                    password: 'password123',
                     generalScore: 92,
                     generalComments: 'Muy buen desempeño general. Excelente manejo de procesos académicos y comunicación con estudiantes.',
                     badges: {
@@ -752,12 +781,26 @@
             if (isFirebaseInitialized) {
                 try {
                     await loadConfigFromFirebase();
+                    await loadCredentialsFromFirebase();
                 } catch (error) {
                     console.log('Usando configuración por defecto');
                     loadDefaultConfiguration();
                 }
             } else {
                 loadDefaultConfiguration();
+            }
+        }
+
+        async function loadCredentialsFromFirebase() {
+            try {
+                const { getDoc, doc } = window.firebaseFunctions;
+                const credentialsDoc = await getDoc(doc(window.firebaseDb, 'config', 'userCredentials'));
+                if (credentialsDoc.exists()) {
+                    userCredentials = { ...defaultCredentials, ...credentialsDoc.data() };
+                }
+            } catch (error) {
+                console.log('Usando credenciales por defecto');
+                userCredentials = { ...defaultCredentials };
             }
         }
 
@@ -913,6 +956,9 @@
             
             // Guardar template de evaluación
             await setDoc(doc(window.firebaseDb, 'config', 'evaluationTemplate'), defaultData.evaluationTemplate);
+            
+            // Guardar credenciales de usuarios
+            await setDoc(doc(window.firebaseDb, 'config', 'userCredentials'), userCredentials);
         }
 
         async function createDefaultUserData() {
@@ -932,26 +978,24 @@
             const password = document.getElementById('password').value;
             
             try {
-                const email = nicknameToEmail[username];
-                if (!email) {
+                // Verificar credenciales localmente primero
+                if (!userCredentials[username]) {
                     throw new Error('Usuario no encontrado');
                 }
                 
-                if (isFirebaseInitialized) {
-                    // Login con Firebase
-                    const { signInWithEmailAndPassword } = window.firebaseFunctions;
-                    const userCredential = await signInWithEmailAndPassword(window.firebaseAuth, email, password);
-                    
-                    // Cargar datos del usuario desde Firestore
-                    await loadUserFromFirestore(username);
+                if (userCredentials[username].password !== password) {
+                    throw new Error('Contraseña incorrecta');
+                }
+                
+                // Cargar datos del usuario
+                if (username === 'admin') {
+                    currentUser = {
+                        username: 'admin',
+                        name: 'Administrador CNCI',
+                        role: 'admin'
+                    };
                 } else {
-                    // Login local (fallback)
-                    if ((username === 'admin' && password === 'admin123') || 
-                        (username.startsWith('usuario') && password === 'password123')) {
-                        await loadUserFromLocal(username);
-                    } else {
-                        throw new Error('Credenciales incorrectas');
-                    }
+                    await loadUserFromStorage(username);
                 }
                 
                 loginError.classList.add('hidden');
@@ -964,46 +1008,37 @@
                 
             } catch (error) {
                 console.error('Error en login:', error);
+                loginError.textContent = `❌ ${error.message}`;
                 loginError.classList.remove('hidden');
             }
         }
 
-        async function loadUserFromFirestore(username) {
-            const { getDoc, doc } = window.firebaseFunctions;
-            
-            if (username === 'admin') {
-                currentUser = {
-                    username: 'admin',
-                    name: 'Administrador CNCI',
-                    role: 'admin'
-                };
-            } else {
-                const userDoc = await getDoc(doc(window.firebaseDb, 'users', username));
-                if (userDoc.exists()) {
-                    currentUser = userDoc.data();
-                } else {
-                    throw new Error('Datos de usuario no encontrados');
+        async function loadUserFromStorage(username) {
+            try {
+                if (isFirebaseInitialized) {
+                    // Intentar cargar desde Firestore
+                    const { getDoc, doc } = window.firebaseFunctions;
+                    const userDoc = await getDoc(doc(window.firebaseDb, 'users', username));
+                    if (userDoc.exists()) {
+                        currentUser = userDoc.data();
+                        return;
+                    }
                 }
-            }
-        }
-
-        async function loadUserFromLocal(username) {
-            if (username === 'admin') {
-                currentUser = {
-                    username: 'admin',
-                    name: 'Administrador CNCI',
-                    role: 'admin'
-                };
-            } else {
-                // Buscar en datos por defecto
+                
+                // Fallback a datos locales
                 const userData = defaultData.defaultUsers.find(u => u.username === username);
                 if (userData) {
                     currentUser = userData;
                 } else {
-                    throw new Error('Usuario no encontrado');
+                    throw new Error('Datos de usuario no encontrados');
                 }
+            } catch (error) {
+                console.error('Error cargando usuario:', error);
+                throw new Error('Error cargando datos del usuario');
             }
         }
+
+
 
         // ===== FUNCIONES DE NAVEGACIÓN =====
 
@@ -1248,9 +1283,15 @@
                         (user.generalComments.length > 50 ? user.generalComments.substring(0, 50) + '...' : user.generalComments) : 
                         'Sin comentarios';
 
+                    // Obtener la contraseña actual del usuario
+                    const currentPassword = userCredentials[user.username]?.password || user.password || 'password123';
+
                     row.innerHTML = `
                         <td class="px-4 py-3 text-sm text-gray-900">${user.username || 'N/A'}</td>
                         <td class="px-4 py-3 text-sm text-gray-900">${user.name}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900">
+                            <span class="bg-gray-100 px-2 py-1 rounded font-mono text-xs">${currentPassword}</span>
+                        </td>
                         <td class="px-4 py-3 text-sm text-gray-900">${user.generalScore || 0}/100</td>
                         <td class="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">${shortComments}</td>
                         <td class="px-4 py-3 text-sm space-x-2">
@@ -1289,10 +1330,14 @@
                     document.getElementById('userNameInput').value = user.name || '';
                     document.getElementById('userGeneralScore').value = user.generalScore || 0;
                     document.getElementById('userComments').value = user.generalComments || '';
+                    // Mostrar contraseña actual como placeholder
+                    const currentPassword = userCredentials[username]?.password || user.password || 'password123';
+                    document.getElementById('userPassword').placeholder = `Actual: ${currentPassword}`;
                 }
             } else {
                 title.textContent = '➕ Añadir Usuario';
                 document.getElementById('userForm').reset();
+                document.getElementById('userPassword').placeholder = 'Contraseña para el nuevo usuario';
             }
             
             modal.classList.remove('hidden');
@@ -1331,6 +1376,25 @@
             const newPassword = document.getElementById('userPassword').value;
 
             try {
+                // Actualizar contraseña en el sistema local
+                if (newPassword && newPassword.trim() !== '') {
+                    userCredentials[userData.username] = {
+                        password: newPassword,
+                        role: 'user'
+                    };
+                    userData.password = newPassword;
+                } else if (!userCredentials[userData.username]) {
+                    // Usuario nuevo sin contraseña especificada
+                    userCredentials[userData.username] = {
+                        password: 'password123',
+                        role: 'user'
+                    };
+                    userData.password = 'password123';
+                } else {
+                    // Mantener contraseña existente
+                    userData.password = userCredentials[userData.username].password;
+                }
+
                 if (isFirebaseInitialized) {
                     const { setDoc, doc } = window.firebaseFunctions;
                     
@@ -1346,25 +1410,11 @@
                     
                     await setDoc(doc(window.firebaseDb, 'users', userData.username), userData);
                     
+                    // Guardar credenciales en Firebase
+                    await setDoc(doc(window.firebaseDb, 'config', 'userCredentials'), userCredentials);
+                    
                     // Sincronizar categorías con el template actual
                     await updateUserCategoriesFromTemplate(userData.username);
-                    
-                    // Crear o actualizar usuario en Authentication
-                    const email = nicknameToEmail[userData.username];
-                    if (email) {
-                        try {
-                            const { createUserWithEmailAndPassword } = window.firebaseFunctions;
-                            const password = newPassword || 'password123';
-                            await createUserWithEmailAndPassword(window.firebaseAuth, email, password);
-                        } catch (error) {
-                            if (error.code === 'auth/email-already-in-use' && newPassword) {
-                                // Si el usuario existe y queremos cambiar la contraseña
-                                showNotification('⚠️ Usuario guardado. Para cambiar contraseña usa la sección de detalles', 'info');
-                            } else if (error.code !== 'auth/email-already-in-use') {
-                                console.error('Error creando usuario en Auth:', error);
-                            }
-                        }
-                    }
                 } else {
                     // Modo local
                     if (currentEditingUser) {
@@ -1384,7 +1434,7 @@
                 
                 closeUserModal();
                 await loadUsersTable();
-                showNotification('✅ Usuario guardado y sincronizado correctamente');
+                showNotification('✅ Usuario y contraseña guardados correctamente');
             } catch (error) {
                 console.error('Error guardando usuario:', error);
                 showNotification('❌ Error al guardar el usuario', 'error');
@@ -1545,6 +1595,18 @@
 
             const newPassword = document.getElementById('detailsUserPassword').value;
 
+            // Actualizar contraseña si se proporcionó una nueva
+            if (newPassword && newPassword.trim() !== '') {
+                userCredentials[currentEditingUser] = {
+                    password: newPassword,
+                    role: userData.role
+                };
+                userData.password = newPassword;
+            } else {
+                // Mantener contraseña existente
+                userData.password = userCredentials[currentEditingUser]?.password || 'password123';
+            }
+
             document.querySelectorAll('.category-score').forEach(input => {
                 const categoryName = input.dataset.category;
                 const score = parseInt(input.value);
@@ -1560,21 +1622,19 @@
                     const { setDoc, doc } = window.firebaseFunctions;
                     await setDoc(doc(window.firebaseDb, 'users', currentEditingUser), userData);
                     
-                    // Cambiar contraseña si se proporcionó una nueva
-                    if (newPassword && newPassword.trim() !== '') {
-                        try {
-                            // Nota: En un entorno real, necesitarías usar Firebase Admin SDK para cambiar contraseñas
-                            // Por ahora, solo mostramos una notificación
-                            showNotification('⚠️ Datos guardados. El cambio de contraseña requiere configuración adicional', 'info');
-                        } catch (error) {
-                            console.error('Error cambiando contraseña:', error);
-                        }
+                    // Guardar credenciales actualizadas en Firebase
+                    await setDoc(doc(window.firebaseDb, 'config', 'userCredentials'), userCredentials);
+                } else {
+                    // Actualizar en modo local
+                    const userIndex = allUsers.findIndex(u => u.username === currentEditingUser);
+                    if (userIndex !== -1) {
+                        allUsers[userIndex] = userData;
                     }
                 }
                 
                 closeDetailsModal();
                 await loadUsersTable();
-                showNotification('✅ Detalles del usuario actualizados correctamente');
+                showNotification('✅ Usuario y contraseña actualizados correctamente');
             } catch (error) {
                 console.error('Error actualizando usuario:', error);
                 showNotification('❌ Error al actualizar el usuario', 'error');
@@ -1892,5 +1952,5 @@
         window.addCriteria = addCriteria;
         window.removeCriteria = removeCriteria;
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9798b398764220aa',t:'MTc1NjkzODczMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9798bfa3c65220aa',t:'MTc1NjkzOTIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
