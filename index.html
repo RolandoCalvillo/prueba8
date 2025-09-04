@@ -124,6 +124,11 @@
                         <option value="Admin06">Admin06 - Recursos Humanos</option>
                         <option value="Admin07">Admin07 - Marketing</option>
                         <option value="Admin08">Admin08 - Calidad</option>
+                        <option value="Admin09">Admin09 - Investigación y Desarrollo</option>
+                        <option value="Admin10">Admin10 - Relaciones Internacionales</option>
+                        <option value="Admin11">Admin11 - Bienestar Estudiantil</option>
+                        <option value="Admin12">Admin12 - Educación Continua</option>
+                        <option value="Admin13">Admin13 - Vinculación Empresarial</option>
                     </select>
                 </div>
                 <div>
@@ -679,6 +684,11 @@
             'Admin06': { password: 'admin123', role: 'admin', name: 'Roberto Díaz Morales', department: 'Recursos Humanos' },
             'Admin07': { password: 'admin123', role: 'admin', name: 'Patricia Jiménez Ruiz', department: 'Marketing' },
             'Admin08': { password: 'admin123', role: 'admin', name: 'Fernando Castro López', department: 'Calidad' },
+            'Admin09': { password: 'admin123', role: 'admin', name: 'Alejandra Moreno Vega', department: 'Investigación y Desarrollo' },
+            'Admin10': { password: 'admin123', role: 'admin', name: 'Ricardo Herrera Silva', department: 'Relaciones Internacionales' },
+            'Admin11': { password: 'admin123', role: 'admin', name: 'Gabriela Ramírez Cruz', department: 'Bienestar Estudiantil' },
+            'Admin12': { password: 'admin123', role: 'admin', name: 'Miguel Ángel Vargas', department: 'Educación Continua' },
+            'Admin13': { password: 'admin123', role: 'admin', name: 'Claudia Mendoza Ruiz', department: 'Vinculación Empresarial' },
             
             // Usuarios de Admin01
             'usuario01_A01': { password: 'pass123', role: 'user', adminId: 'Admin01' },
@@ -734,7 +744,42 @@
             'usuario02_A08': { password: 'pass123', role: 'user', adminId: 'Admin08' },
             'usuario03_A08': { password: 'pass123', role: 'user', adminId: 'Admin08' },
             'usuario04_A08': { password: 'pass123', role: 'user', adminId: 'Admin08' },
-            'usuario05_A08': { password: 'pass123', role: 'user', adminId: 'Admin08' }
+            'usuario05_A08': { password: 'pass123', role: 'user', adminId: 'Admin08' },
+            
+            // Usuarios de Admin09
+            'usuario01_A09': { password: 'pass123', role: 'user', adminId: 'Admin09' },
+            'usuario02_A09': { password: 'pass123', role: 'user', adminId: 'Admin09' },
+            'usuario03_A09': { password: 'pass123', role: 'user', adminId: 'Admin09' },
+            'usuario04_A09': { password: 'pass123', role: 'user', adminId: 'Admin09' },
+            'usuario05_A09': { password: 'pass123', role: 'user', adminId: 'Admin09' },
+            
+            // Usuarios de Admin10
+            'usuario01_A10': { password: 'pass123', role: 'user', adminId: 'Admin10' },
+            'usuario02_A10': { password: 'pass123', role: 'user', adminId: 'Admin10' },
+            'usuario03_A10': { password: 'pass123', role: 'user', adminId: 'Admin10' },
+            'usuario04_A10': { password: 'pass123', role: 'user', adminId: 'Admin10' },
+            'usuario05_A10': { password: 'pass123', role: 'user', adminId: 'Admin10' },
+            
+            // Usuarios de Admin11
+            'usuario01_A11': { password: 'pass123', role: 'user', adminId: 'Admin11' },
+            'usuario02_A11': { password: 'pass123', role: 'user', adminId: 'Admin11' },
+            'usuario03_A11': { password: 'pass123', role: 'user', adminId: 'Admin11' },
+            'usuario04_A11': { password: 'pass123', role: 'user', adminId: 'Admin11' },
+            'usuario05_A11': { password: 'pass123', role: 'user', adminId: 'Admin11' },
+            
+            // Usuarios de Admin12
+            'usuario01_A12': { password: 'pass123', role: 'user', adminId: 'Admin12' },
+            'usuario02_A12': { password: 'pass123', role: 'user', adminId: 'Admin12' },
+            'usuario03_A12': { password: 'pass123', role: 'user', adminId: 'Admin12' },
+            'usuario04_A12': { password: 'pass123', role: 'user', adminId: 'Admin12' },
+            'usuario05_A12': { password: 'pass123', role: 'user', adminId: 'Admin12' },
+            
+            // Usuarios de Admin13
+            'usuario01_A13': { password: 'pass123', role: 'user', adminId: 'Admin13' },
+            'usuario02_A13': { password: 'pass123', role: 'user', adminId: 'Admin13' },
+            'usuario03_A13': { password: 'pass123', role: 'user', adminId: 'Admin13' },
+            'usuario04_A13': { password: 'pass123', role: 'user', adminId: 'Admin13' },
+            'usuario05_A13': { password: 'pass123', role: 'user', adminId: 'Admin13' }
         };
 
         // Mapeo de nicknames a emails (para Firebase cuando esté disponible)
@@ -1088,6 +1133,448 @@
                         objectives: 'Desarrollar protocolos de atención\nCapacitar a nuevos miembros del equipo',
                         resources: 'Curso de resolución de conflictos\nTaller de atención al cliente',
                         additionalNotes: 'Referente en manejo de situaciones difíciles.'
+                    },
+                    categories: {}
+                },
+                // Usuarios adicionales de Admin02-08 (datos básicos)
+                {
+                    username: 'usuario03_A02',
+                    name: 'Diego Fernández Ruiz',
+                    role: 'user',
+                    adminId: 'Admin02',
+                    password: 'pass123',
+                    generalScore: 84,
+                    generalComments: 'Buen desempeño en servicios estudiantiles con enfoque en seguimiento.',
+                    badges: { excellence: false, communicator: true, consistent: false },
+                    workPlan: { objectives: 'Mejorar consistencia en seguimiento', resources: 'Capacitación en CRM', additionalNotes: 'Potencial de crecimiento alto.' },
+                    categories: {}
+                },
+                {
+                    username: 'usuario04_A02',
+                    name: 'Valeria Morales Jiménez',
+                    role: 'user',
+                    adminId: 'Admin02',
+                    password: 'pass123',
+                    generalScore: 91,
+                    generalComments: 'Excelente en todas las áreas de servicios estudiantiles.',
+                    badges: { excellence: true, communicator: true, consistent: true },
+                    workPlan: { objectives: 'Liderar proyectos de mejora', resources: 'Curso de liderazgo', additionalNotes: 'Candidata para promoción.' },
+                    categories: {}
+                },
+                {
+                    username: 'usuario05_A02',
+                    name: 'Andrés Castillo Vega',
+                    role: 'user',
+                    adminId: 'Admin02',
+                    password: 'pass123',
+                    generalScore: 79,
+                    generalComments: 'Desempeño satisfactorio con oportunidades de mejora.',
+                    badges: { excellence: false, communicator: false, consistent: true },
+                    workPlan: { objectives: 'Mejorar habilidades de comunicación', resources: 'Taller de comunicación efectiva', additionalNotes: 'Trabajador constante y dedicado.' },
+                    categories: {}
+                },
+                // Usuarios de Admin09 - Investigación y Desarrollo
+                {
+                    username: 'usuario01_A09',
+                    name: 'Dr. Alejandro Mendoza Torres',
+                    role: 'user',
+                    adminId: 'Admin09',
+                    password: 'pass123',
+                    generalScore: 94,
+                    generalComments: 'Excelente investigador con múltiples publicaciones y proyectos innovadores.',
+                    badges: { excellence: true, communicator: true, consistent: true },
+                    workPlan: {
+                        objectives: 'Liderar proyecto de IA educativa\nMentoría a investigadores junior',
+                        resources: 'Conferencias internacionales\nAcceso a bases de datos especializadas',
+                        additionalNotes: 'Investigador estrella del departamento con reconocimiento internacional.'
+                    },
+                    categories: {}
+                },
+                {
+                    username: 'usuario02_A09',
+                    name: 'Dra. Carolina Espinoza Ruiz',
+                    role: 'user',
+                    adminId: 'Admin09',
+                    password: 'pass123',
+                    generalScore: 89,
+                    generalComments: 'Especialista en metodologías educativas innovadoras y tecnología aplicada.',
+                    badges: { excellence: false, communicator: true, consistent: true },
+                    workPlan: {
+                        objectives: 'Desarrollar plataforma de aprendizaje adaptativo\nPublicar en revistas indexadas',
+                        resources: 'Software de análisis estadístico\nCapacitación en machine learning',
+                        additionalNotes: 'Experta en análisis de datos educativos.'
+                    },
+                    categories: {}
+                },
+                {
+                    username: 'usuario03_A09',
+                    name: 'Ing. Roberto Silva Martín',
+                    role: 'user',
+                    adminId: 'Admin09',
+                    password: 'pass123',
+                    generalScore: 86,
+                    generalComments: 'Desarrollador de soluciones tecnológicas para educación virtual.',
+                    badges: { excellence: false, communicator: false, consistent: true },
+                    workPlan: {
+                        objectives: 'Optimizar plataforma LMS\nImplementar realidad virtual en cursos',
+                        resources: 'Herramientas de desarrollo VR\nCursos de programación avanzada',
+                        additionalNotes: 'Especialista técnico con visión innovadora.'
+                    },
+                    categories: {}
+                },
+                {
+                    username: 'usuario04_A09',
+                    name: 'Mtra. Fernanda López Herrera',
+                    role: 'user',
+                    adminId: 'Admin09',
+                    password: 'pass123',
+                    generalScore: 92,
+                    generalComments: 'Investigadora en psicología educativa y neuroaprendizaje.',
+                    badges: { excellence: true, communicator: true, consistent: true },
+                    workPlan: {
+                        objectives: 'Estudiar impacto neurológico del e-learning\nDesarrollar técnicas de evaluación cognitiva',
+                        resources: 'Laboratorio de neurociencias\nEquipo de EEG educativo',
+                        additionalNotes: 'Pionera en neuroeducación aplicada a entornos virtuales.'
+                    },
+                    categories: {}
+                },
+                {
+                    username: 'usuario05_A09',
+                    name: 'Dr. Mauricio Guerrero Sánchez',
+                    role: 'user',
+                    adminId: 'Admin09',
+                    password: 'pass123',
+                    generalScore: 87,
+                    generalComments: 'Especialista en análisis de big data educativo y métricas de aprendizaje.',
+                    badges: { excellence: false, communicator: true, consistent: true },
+                    workPlan: {
+                        objectives: 'Implementar analytics predictivos\nDesarrollar dashboard de métricas estudiantiles',
+                        resources: 'Plataforma de big data\nCertificación en data science',
+                        additionalNotes: 'Experto en transformar datos en insights educativos.'
+                    },
+                    categories: {}
+                },
+                // Usuarios de Admin10 - Relaciones Internacionales
+                {
+                    username: 'usuario01_A10',
+                    name: 'Lic. Isabella Martínez Wong',
+                    role: 'user',
+                    adminId: 'Admin10',
+                    password: 'pass123',
+                    generalScore: 93,
+                    generalComments: 'Coordinadora de intercambios internacionales con excelentes resultados.',
+                    badges: { excellence: true, communicator: true, consistent: true },
+                    workPlan: {
+                        objectives: 'Expandir convenios con universidades asiáticas\nDesarrollar programa de doble titulación',
+                        resources: 'Viajes de negociación internacional\nCurso de protocolo diplomático',
+                        additionalNotes: 'Trilingüe con amplia red de contactos internacionales.'
+                    },
+                    categories: {}
+                },
+                {
+                    username: 'usuario02_A10',
+                    name: 'Mtro. Jean-Pierre Dubois',
+                    role: 'user',
+                    adminId: 'Admin10',
+                    password: 'pass123',
+                    generalScore: 90,
+                    generalComments: 'Especialista en programas europeos y acreditaciones internacionales.',
+                    badges: { excellence: true, communicator: true, consistent: false },
+                    workPlan: {
+                        objectives: 'Obtener acreditación AACSB\nEstablecer oficina en París',
+                        resources: 'Consultoría en acreditaciones\nCapacitación en estándares europeos',
+                        additionalNotes: 'Experto en sistemas educativos europeos.'
+                    },
+                    categories: {}
+                },
+                {
+                    username: 'usuario03_A10',
+                    name: 'Lic. Sakura Tanaka Rodríguez',
+                    role: 'user',
+                    adminId: 'Admin10',
+                    password: 'pass123',
+                    generalScore: 88,
+                    generalComments: 'Coordinadora de programas con universidades japonesas y coreanas.',
+                    badges: { excellence: false, communicator: true, consistent: true },
+                    workPlan: {
+                        objectives: 'Implementar metodología japonesa Kaizen\nDesarrollar intercambio tecnológico',
+                        resources: 'Inmersión cultural en Japón\nCurso de gestión japonesa',
+                        additionalNotes: 'Especialista en culturas asiáticas y tecnología educativa.'
+                    },
+                    categories: {}
+                },
+                {
+                    username: 'usuario04_A10',
+                    name: 'Dr. Alessandro Romano García',
+                    role: 'user',
+                    adminId: 'Admin10',
+                    password: 'pass123',
+                    generalScore: 85,
+                    generalComments: 'Gestor de alianzas estratégicas con instituciones latinoamericanas.',
+                    badges: { excellence: false, communicator: true, consistent: true },
+                    workPlan: {
+                        objectives: 'Crear red universitaria latinoamericana\nDesarrollar programa de movilidad estudiantil',
+                        resources: 'Conferencias regionales\nPlataforma de colaboración virtual',
+                        additionalNotes: 'Experto en integración educativa regional.'
+                    },
+                    categories: {}
+                },
+                {
+                    username: 'usuario05_A10',
+                    name: 'Mtra. Sarah Johnson López',
+                    role: 'user',
+                    adminId: 'Admin10',
+                    password: 'pass123',
+                    generalScore: 91,
+                    generalComments: 'Especialista en programas con universidades estadounidenses y canadienses.',
+                    badges: { excellence: true, communicator: true, consistent: true },
+                    workPlan: {
+                        objectives: 'Establecer campus en Canadá\nDesarrollar programa MBA internacional',
+                        resources: 'Certificación en educación norteamericana\nViajes de prospección',
+                        additionalNotes: 'Bilingüe nativa con experiencia en sistemas educativos norteamericanos.'
+                    },
+                    categories: {}
+                },
+                // Usuarios de Admin11 - Bienestar Estudiantil
+                {
+                    username: 'usuario01_A11',
+                    name: 'Psic. Mariana Flores Delgado',
+                    role: 'user',
+                    adminId: 'Admin11',
+                    password: 'pass123',
+                    generalScore: 95,
+                    generalComments: 'Psicóloga educativa especializada en bienestar emocional estudiantil.',
+                    badges: { excellence: true, communicator: true, consistent: true },
+                    workPlan: {
+                        objectives: 'Implementar programa de salud mental\nDesarrollar app de bienestar estudiantil',
+                        resources: 'Certificación en terapia online\nPlataforma de telepsicología',
+                        additionalNotes: 'Referente nacional en psicología educativa virtual.'
+                    },
+                    categories: {}
+                },
+                {
+                    username: 'usuario02_A11',
+                    name: 'Lic. Carlos Mendoza Ruiz',
+                    role: 'user',
+                    adminId: 'Admin11',
+                    password: 'pass123',
+                    generalScore: 87,
+                    generalComments: 'Coordinador de actividades deportivas y recreativas virtuales.',
+                    badges: { excellence: false, communicator: true, consistent: true },
+                    workPlan: {
+                        objectives: 'Crear liga deportiva virtual\nImplementar pausas activas en clases',
+                        resources: 'Plataforma de gamificación deportiva\nEquipamiento para streaming deportivo',
+                        additionalNotes: 'Innovador en deportes virtuales y bienestar físico.'
+                    },
+                    categories: {}
+                },
+                {
+                    username: 'usuario03_A11',
+                    name: 'Nut. Andrea Vásquez Torres',
+                    role: 'user',
+                    adminId: 'Admin11',
+                    password: 'pass123',
+                    generalScore: 89,
+                    generalComments: 'Nutrióloga especializada en alimentación para estudiantes virtuales.',
+                    badges: { excellence: false, communicator: true, consistent: true },
+                    workPlan: {
+                        objectives: 'Desarrollar programa nutricional estudiantil\nCrear app de seguimiento alimentario',
+                        resources: 'Software de análisis nutricional\nCurso de nutrición deportiva',
+                        additionalNotes: 'Experta en nutrición para el rendimiento académico.'
+                    },
+                    categories: {}
+                },
+                {
+                    username: 'usuario04_A11',
+                    name: 'Lic. Javier Herrera Morales',
+                    role: 'user',
+                    adminId: 'Admin11',
+                    password: 'pass123',
+                    generalScore: 83,
+                    generalComments: 'Coordinador de becas y apoyo socioeconómico estudiantil.',
+                    badges: { excellence: false, communicator: true, consistent: false },
+                    workPlan: {
+                        objectives: 'Ampliar programa de becas\nDesarrollar sistema de apoyo financiero',
+                        resources: 'Plataforma de gestión de becas\nCapacitación en análisis socioeconómico',
+                        additionalNotes: 'Comprometido con la equidad educativa.'
+                    },
+                    categories: {}
+                },
+                {
+                    username: 'usuario05_A11',
+                    name: 'Mtra. Lucía Ramírez Soto',
+                    role: 'user',
+                    adminId: 'Admin11',
+                    password: 'pass123',
+                    generalScore: 92,
+                    generalComments: 'Especialista en inclusión educativa y diversidad estudiantil.',
+                    badges: { excellence: true, communicator: true, consistent: true },
+                    workPlan: {
+                        objectives: 'Implementar programa de inclusión\nDesarrollar tecnología asistiva',
+                        resources: 'Herramientas de accesibilidad\nCapacitación en diversidad',
+                        additionalNotes: 'Líder en educación inclusiva y accesible.'
+                    },
+                    categories: {}
+                },
+                // Usuarios de Admin12 - Educación Continua
+                {
+                    username: 'usuario01_A12',
+                    name: 'Dr. Rodrigo Castañeda Vega',
+                    role: 'user',
+                    adminId: 'Admin12',
+                    password: 'pass123',
+                    generalScore: 91,
+                    generalComments: 'Director de programas ejecutivos y educación para adultos.',
+                    badges: { excellence: true, communicator: true, consistent: false },
+                    workPlan: {
+                        objectives: 'Lanzar MBA ejecutivo online\nDesarrollar microcréditos académicos',
+                        resources: 'Plataforma de educación ejecutiva\nCertificación en adult learning',
+                        additionalNotes: 'Experto en educación para profesionales en activo.'
+                    },
+                    categories: {}
+                },
+                {
+                    username: 'usuario02_A12',
+                    name: 'Mtra. Elena Gutiérrez Ponce',
+                    role: 'user',
+                    adminId: 'Admin12',
+                    password: 'pass123',
+                    generalScore: 88,
+                    generalComments: 'Coordinadora de certificaciones profesionales y cursos especializados.',
+                    badges: { excellence: false, communicator: true, consistent: true },
+                    workPlan: {
+                        objectives: 'Ampliar catálogo de certificaciones\nImplementar badges digitales',
+                        resources: 'Plataforma de credenciales digitales\nAlianzas con organismos certificadores',
+                        additionalNotes: 'Especialista en credencialización y reconocimiento profesional.'
+                    },
+                    categories: {}
+                },
+                {
+                    username: 'usuario03_A12',
+                    name: 'Lic. Fernando Aguilar Ramos',
+                    role: 'user',
+                    adminId: 'Admin12',
+                    password: 'pass123',
+                    generalScore: 85,
+                    generalComments: 'Gestor de programas corporativos y capacitación empresarial.',
+                    badges: { excellence: false, communicator: true, consistent: true },
+                    workPlan: {
+                        objectives: 'Desarrollar universidad corporativa\nImplementar learning analytics empresarial',
+                        resources: 'CRM para clientes corporativos\nPlataforma B2B de capacitación',
+                        additionalNotes: 'Experto en soluciones de capacitación empresarial.'
+                    },
+                    categories: {}
+                },
+                {
+                    username: 'usuario04_A12',
+                    name: 'Dra. Patricia Moreno Silva',
+                    role: 'user',
+                    adminId: 'Admin12',
+                    password: 'pass123',
+                    generalScore: 93,
+                    generalComments: 'Investigadora en andragogía y metodologías para adultos.',
+                    badges: { excellence: true, communicator: true, consistent: true },
+                    workPlan: {
+                        objectives: 'Publicar manual de andragogía digital\nDesarrollar metodología propia',
+                        resources: 'Laboratorio de investigación educativa\nAcceso a journals especializados',
+                        additionalNotes: 'Autoridad académica en educación de adultos.'
+                    },
+                    categories: {}
+                },
+                {
+                    username: 'usuario05_A12',
+                    name: 'Ing. Sebastián Torres Medina',
+                    role: 'user',
+                    adminId: 'Admin12',
+                    password: 'pass123',
+                    generalScore: 86,
+                    generalComments: 'Desarrollador de plataformas de aprendizaje para profesionales.',
+                    badges: { excellence: false, communicator: false, consistent: true },
+                    workPlan: {
+                        objectives: 'Crear plataforma de microlearning\nImplementar IA para personalización',
+                        resources: 'Herramientas de desarrollo IA\nCapacitación en UX/UI avanzado',
+                        additionalNotes: 'Especialista en tecnología educativa para adultos.'
+                    },
+                    categories: {}
+                },
+                // Usuarios de Admin13 - Vinculación Empresarial
+                {
+                    username: 'usuario01_A13',
+                    name: 'Lic. Mónica Herrera Castillo',
+                    role: 'user',
+                    adminId: 'Admin13',
+                    password: 'pass123',
+                    generalScore: 94,
+                    generalComments: 'Directora de alianzas estratégicas con sector empresarial.',
+                    badges: { excellence: true, communicator: true, consistent: true },
+                    workPlan: {
+                        objectives: 'Establecer 50 nuevas alianzas empresariales\nCrear programa de mentorías corporativas',
+                        resources: 'CRM empresarial avanzado\nEventos de networking',
+                        additionalNotes: 'Red de contactos empresariales de más de 500 ejecutivos.'
+                    },
+                    categories: {}
+                },
+                {
+                    username: 'usuario02_A13',
+                    name: 'Ing. Alberto Sánchez Ruiz',
+                    role: 'user',
+                    adminId: 'Admin13',
+                    password: 'pass123',
+                    generalScore: 89,
+                    generalComments: 'Coordinador de prácticas profesionales y bolsa de trabajo.',
+                    badges: { excellence: false, communicator: true, consistent: true },
+                    workPlan: {
+                        objectives: 'Incrementar tasa de empleabilidad al 95%\nDesarrollar plataforma de matching laboral',
+                        resources: 'Software de matching IA\nAlianzas con headhunters',
+                        additionalNotes: 'Especialista en inserción laboral y desarrollo profesional.'
+                    },
+                    categories: {}
+                },
+                {
+                    username: 'usuario03_A13',
+                    name: 'Mtra. Daniela Morales López',
+                    role: 'user',
+                    adminId: 'Admin13',
+                    password: 'pass123',
+                    generalScore: 91,
+                    generalComments: 'Gestora de proyectos de investigación aplicada con empresas.',
+                    badges: { excellence: true, communicator: true, consistent: false },
+                    workPlan: {
+                        objectives: 'Gestionar 20 proyectos I+D empresariales\nCrear incubadora de startups',
+                        resources: 'Laboratorio de innovación\nFondo semilla para startups',
+                        additionalNotes: 'Experta en transferencia tecnológica universidad-empresa.'
+                    },
+                    categories: {}
+                },
+                {
+                    username: 'usuario04_A13',
+                    name: 'Lic. Jorge Ramírez Vega',
+                    role: 'user',
+                    adminId: 'Admin13',
+                    password: 'pass123',
+                    generalScore: 87,
+                    generalComments: 'Especialista en responsabilidad social empresarial y sostenibilidad.',
+                    badges: { excellence: false, communicator: true, consistent: true },
+                    workPlan: {
+                        objectives: 'Implementar programa de RSE\nDesarrollar certificación en sostenibilidad',
+                        resources: 'Consultoría en sostenibilidad\nPlataforma de medición de impacto',
+                        additionalNotes: 'Líder en educación para la sostenibilidad empresarial.'
+                    },
+                    categories: {}
+                },
+                {
+                    username: 'usuario05_A13',
+                    name: 'Dra. Carmen Jiménez Torres',
+                    role: 'user',
+                    adminId: 'Admin13',
+                    password: 'pass123',
+                    generalScore: 92,
+                    generalComments: 'Investigadora en emprendimiento e innovación empresarial.',
+                    badges: { excellence: true, communicator: true, consistent: true },
+                    workPlan: {
+                        objectives: 'Publicar estudio sobre emprendimiento digital\nCrear aceleradora de negocios',
+                        resources: 'Centro de emprendimiento\nRed de inversionistas ángel',
+                        additionalNotes: 'Mentora de más de 100 emprendedores exitosos.'
                     },
                     categories: {}
                 }
@@ -3022,5 +3509,5 @@
         window.removeCriteria = removeCriteria;
         window.deleteAdmin = deleteAdmin;
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'979911e212c938ef',t:'MTc1Njk0MjU5Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'979e78cfa73b38ef',t:'MTc1Njk5OTIzNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
